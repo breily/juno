@@ -1,4 +1,45 @@
-> Combine get and post into one container?
+| means done
+
 > test post with other inputs (specifically files)
-> add a config dict option to start the app
-> work on file organization (too many names - juno.juno.Juno)
+> add regexes for urls - working on it
+> would reassigning any operators work? i like | for something
+> implement something like:
+    j = JunoResponse().head( title('asdf') + script(src='etc...') ).body( div('asdf') )
+    j.div("another div", p("paragraph text in div"))
+    j.div("footer")
+    - a chainable response constructor, using __getattr__ to build html tags
+    -- or --
+    j = juno.JunoResponse
+    j += juno.JunoHtml().title('asdf')
+    |-- or maybe also use --
+    |j = juno.JunoResponse()
+    |j['SOME_HEADER'] = 'value'
+    |j['CONTENT_TYPE'] = 'text/json'
+> modify JunoRequest
+    - where j is a JunoRequest
+    j.headers       # CONTENT_LENGTH, HTTP...
+    |j.location      # document_uri
+    |j.full_location # request_uri
+    |j.input         # get and post
+    |- also finish its dict implementation
+    - look at djangos QueryDict (handles multiple form values with
+        the same name); just have lists of the values?
+
+> schortcuts for some responses (404, redirects, 405, 403, 410, 500)
+> have the config dict contain an option for a default 404 page (maybe 500)
+> make db objects inherit from juno.JunoModel (or just decorate them?)
+> give juno.Juno a views member (basically rename the urls member)
+> alternative url/re syntax? /\d+hello -> re(lit('/') + oneormore(digit) + lit('hello'))
+    - @juno.get(_/'posts'/zeroormore(any, name=title)) <- .get('/posts/.*')
+    - @juno.get(_/literal('posts')/zer...
+    -- or -- using this
+    @get('/hello/*:name/') # or @get('/hello/*/')
+    def say_hello(request, name):
+        return 'Hello, #{name}'
+
+> multilevel decorators:
+    @f(arg)
+    @d
+    def a: pass
+    ==
+    a = f(arg)(d(a))
