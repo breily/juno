@@ -37,6 +37,15 @@
     def say_hello(request, name):
         return 'Hello, #{name}'
 
+> when a user function gets a request object, allow writing to it to response
+    def index(web):
+        web.write('Hello world')
+        web.write('Content-Type: text/json', type='header')
+    -- which causes: 
+        def web.write(self, text, type='body')
+            # if no JunoResponse, make one
+            j.append(text)
+
 > multilevel decorators:
     @f(arg)
     @d
