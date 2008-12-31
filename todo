@@ -45,6 +45,8 @@
     Item.all().where(title.contains('urgent'))
     -- or just use the sqlalchemy api?
 
+> use python's http server for dev server
+
 > notes:
   multilevel decorators:
     @f(arg)

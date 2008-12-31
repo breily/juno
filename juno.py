@@ -16,6 +16,8 @@ class Juno:
 
     def run(self):
         """Runs the Juno hub, in the set mode (default now is scgi). """
+        if self.config['mode'] == 'self':
+            print 'Juno would run its own server here...'
         if self.config['mode'] == 'scgi':
             SCGIRequestHandler.process = self.request
             server = SocketServer.ThreadingTCPServer(
