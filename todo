@@ -15,6 +15,11 @@
   is required
   def view(request):
     html("<html>some html code</html>")
+    -- or an implicit global response named J (implmenet __call__ for JunoResponse?)
+    def view(web):
+        J['Content-Type'] = '...'
+        J('writing some text here')
+        J(status=404)
 
 > make db objects inherit from juno.JunoModel (or just decorate them?)
 > alternative url/re syntax?
