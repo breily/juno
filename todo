@@ -11,11 +11,9 @@
         J('writing some text here')
         J(status=404)
 
-> make db objects inherit from juno.JunoModel (or just decorate them?)
-> alternative url/re syntax?
-    @get('/hello/*:name/') or '/hello/:name/'
+> string interpolation of known arguments/methods? Easy, pointless, coollooking
     def say_hello(request, name):
-        return 'Hello, #{name}'
+        return 'Hello, #{name}, and if it were lowered, #{name.lower}'
 
 > when a user function gets a request object, allow writing to it to response
     def index(web):
@@ -26,6 +24,7 @@
             # if no JunoResponse, make one
             j.append(text)
 
+> make db objects inherit from juno.JunoData (or just decorate them?)
 > database api:
     Item.all().where(title.contains('urgent'))
     -- or just use the sqlalchemy api?
