@@ -38,6 +38,11 @@
 
 > '/media/*:file/' does not match '/media/css/index.css', but it should
 
+> make Juno.dispatch == dispatch(self, url, **kwargs)
+    -- kwargs holds any information from request, and a JunoRequest is then built by
+       Juno in dispatch.  Thus SCGI is separated from the framework, and testing will be easy
+       offline - import juno; juno.dispatch('/')
+
 > notes:
   multilevel decorators:
     @f(arg)

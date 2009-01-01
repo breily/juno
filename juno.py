@@ -193,6 +193,12 @@ class JunoResponse:
         self.config.update(kwargs)
         self.config['headers']['Content-Length'] = len(self.config['response_body'])
     
+    def html(self):
+        return self.append('<html>')
+
+    def endhtml(self):
+        return self.append('</html>')
+
     def head(self):
         return self.append('<head>')
     
@@ -228,11 +234,8 @@ class JunoResponse:
     def text(self, text):
         return self.append(text)
 
-    def endhtml(self):
-        return self.append('</html>')
-
     def append(self, text):
-        self.config['response_body'] += text
+        self.config['response_body'] += str(text)
         self.config['headers']['Content-Length'] = len(self.config['response_body'])
         return self
 
@@ -330,9 +333,59 @@ def delete(url=None): return route(url, 'delete')
 
 _response = None
 
+# I don't like doing it this way, so I'll try to think of something better.
+# Also, add div's kwargs functionality to other tags (and make it optional)
+
 def html():
     global _response
-    return _response.append('<html>')
+    return _response.html()
+
+def endhtml():
+    global _response
+    return _response.endhtml()
+
+def head():
+    global _response
+    return _response.head()
+
+def endhead():
+    global _response
+    return _response.endhead()
+
+def title(title):
+    global _response
+    return _response.title(title)
+
+def css(href):
+    global _response
+    return _response.css(href)
+
+def script(src):
+    global _response
+    return _response.script(src)
+
+def body():
+    global _response
+    return _response.body()
+
+def endbody():
+    global _response
+    return _response.endbody()
+
+def div(**kwargs):
+    """ Attaches a div with the given attributes, i.e.:
+        {'id': 'first'} => 'id="first"'
+    """    
+    global _response
+    return _response.div(**kwargs)
+
+def enddiv():
+    global _response
+    return _response.enddiv()
+
+def text(text):
+    global _response
+    return _response.text(text)
 
 def respond(**kwargs):
     global _response

@@ -56,5 +56,11 @@ def html_chain(web):
         endbody().                                  \
     endhtml()
 
-if __name__ == '__main__':
-    run()
+@get('/count/*:times/')
+def count(web, times):
+    html().head().title('count to %s' %times).endhead().body()
+    for i in range(int(times)):
+        div(type='counter', id='%s' %i).text("Number: %s" %i).enddiv()
+    endbody().endhtml()
+
+if __name__ == '__main__': run()
