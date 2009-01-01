@@ -44,6 +44,10 @@
 > database api:
     Item.all().where(title.contains('urgent'))
     -- or just use the sqlalchemy api?
+    -- or:
+    model('item', ('name', 'string'))
+    data('item').id(4).order('name')
+    create('item', name='asdf')
 
 > use python's http server for dev server
 

@@ -1,9 +1,15 @@
 import SocketServer
+import mimetypes
 
 class Juno:
     def __init__(self, config=None):
         """Takes an optional configuration dictionary. """
+        global _hub
+        if _hub is not None:
+            print 'warning: there is already a Juno object created;'
+            print '         you might get some wierd behavior.'
         self.routes = []
+        global media_serve
         self.config = {
                 'log':      True,
                 'mode':     'scgi',
@@ -11,8 +17,12 @@ class Juno:
                 '404_template': '',
                 '500_template': '',
                 'name': 'JunoApp',
+                'media_url': '/media/*:file/',
+                'media_root': './media/',
+                'media_handler': media_serve,
                 }
         if config is not None: self.config.update(config)
+        self.route(self.config['media_url'], self.config['media_handler'])
 
     def run(self):
         """Runs the Juno hub, in the set mode (default now is scgi). """
@@ -245,9 +255,13 @@ class NoViewsAssigned(Exception): pass
 
 _hub = None
 
-def init(config=None):
+def set_config(config=None):
     global _hub
     _hub = _hub if _hub else Juno(config)
+
+def get_config(key):
+    global _hub
+    return _hub.config[key] if key in _hub.config else None
 
 def run():
     if _hub: _hub.run()
@@ -255,7 +269,7 @@ def run():
 
 def route(url, method='*'):
     global _hub
-    if _hub is None: init()
+    if _hub is None: set_config()
     def wrap(f):
         _hub.route(url, f, method)
     return wrap
@@ -284,3 +298,11 @@ def notfound(template=None):
         global _hub
         template = _hub.config['404_template'] 
     return JunoResponse(status=404)
+
+def media_serve(web, file):
+    global _hub
+    file = get_config('media_root') + file
+    j = JunoResponse()
+    type = mimetypes.guess_type(file)
+    if type is not None: j['Content-Type'] = type
+    j.append(open(file, 'r').read())
