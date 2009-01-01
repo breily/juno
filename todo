@@ -1,15 +1,5 @@
-| means done
-
 > test post with other inputs (specifically files)
 > would reassigning any operators work? i like | for something
-> implement something like:
-    j = JunoResponse().head( title('asdf') + script(src='etc...') ).body( div('asdf') )
-    j.div("another div", p("paragraph text in div"))
-    j.div("footer")
-    - a chainable response constructor, using __getattr__ to build html tags
-    -- or --
-    j = juno.JunoResponse
-    j += juno.JunoHtml().title('asdf')
 
 >>>> possible: make a global response object for each request, so no explicit return
   is required
@@ -36,11 +26,6 @@
             # if no JunoResponse, make one
             j.append(text)
 
->>>> implicit urls:
-    @get
-    def index(web): ...
-    # url is function name = '/index/'
-
 > database api:
     Item.all().where(title.contains('urgent'))
     -- or just use the sqlalchemy api?
@@ -50,6 +35,8 @@
     create('item', name='asdf')
 
 > use python's http server for dev server
+
+> '/media/*:file/' does not match '/media/css/index.css', but it should
 
 > notes:
   multilevel decorators:

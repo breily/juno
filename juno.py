@@ -22,7 +22,7 @@ class Juno:
                 'media_handler': media_serve,
                 }
         if config is not None: self.config.update(config)
-        self.route(self.config['media_url'], self.config['media_handler'])
+        self.route(self.config['media_url'], self.config['media_handler'], '*')
 
     def run(self):
         """Runs the Juno hub, in the set mode (default now is scgi). """
@@ -50,17 +50,20 @@ class Juno:
         if self.config['log']: print request.raw
         for route in self.routes:
             if route.match(request):
+                if self.config['log']: print 'match: %s' %route
+                global _response
+                _response = JunoResponse()
                 response = route.dispatch()
-                if response is None:
-                    global _response
-                    response = _response
+                if response is None: response = _response
                 if not isinstance(response, JunoResponse):
-                    response = JunoResponse(body=str(response))
-                return response.render()    
+                    response = JunoResponse(response_body=str(response))
+                return response.render()
         return JunoResponse(body='page not found', status=404).render()        
 
-    def route(self, url, func, method='*'):
+    def route(self, url, func, method):
         """Attaches a view to a url or list of urls, for a given function. """
+        if url is None: url = '/' + func.__name__ + '/'
+        if self.config['log']: print 'creating: %s for %s' %(url, func.__name__)
         if type(url) == str:
             self.routes.append(JunoRoute(url, func, method))
         else:
@@ -179,7 +182,7 @@ class JunoResponse:
     status_codes = {200: 'OK', 302: 'Found', 404: 'Not Found'}
     def __init__(self, config=None, **kwargs):
         self.config = {
-            'body': '',
+            'response_body': '',
             'status': 200,
             'headers': {
                 'Content-Type': 'text/html',
@@ -188,11 +191,49 @@ class JunoResponse:
         if config is None: config = {}
         self.config.update(config)
         self.config.update(kwargs)
-        self.config['headers']['Content-Length'] = len(self.config['body'])
+        self.config['headers']['Content-Length'] = len(self.config['response_body'])
     
+    def head(self):
+        return self.append('<head>')
+    
+    def endhead(self):
+        return self.append('</head>')
+
+    def title(self, title):
+        return self.append('<title>%s</title>' %title)
+
+    def css(self, href):
+        return self.append('<link href="%s" type="text/css" rel="styleshee" />' %href)   
+
+    def script(self, src):
+        return self.append('<script src="%s" type="text/javascript"></script>' %src)
+
+    def body(self):
+        return self.append('<body>')
+    
+    def endbody(self):
+        return self.append('</body>')
+
+    def div(self, **kwargs):
+        """ Attaches a div with the given attributes, i.e.:
+            {'id': 'first'} => 'id="first"'
+        """    
+        return self.append('<div %s>' %' '.join(
+            ['%s="%s"' %(k, v) for k, v in kwargs.items()]
+        ))
+    
+    def enddiv(self):
+        return self.append('</div>')
+    
+    def text(self, text):
+        return self.append(text)
+
+    def endhtml(self):
+        return self.append('</html>')
+
     def append(self, text):
-        self.config['body'] += text
-        self.config['headers']['Content-Length'] = len(self.config['body'])
+        self.config['response_body'] += text
+        self.config['headers']['Content-Length'] = len(self.config['response_body'])
         return self
 
     def __iadd__(self, text):
@@ -204,13 +245,13 @@ class JunoResponse:
         for header, val in self.config['headers'].items():
             response += ': '.join((header, str(val))) + '\r\n'
         response += '\r\n'
-        response += '%s' %self.config['body']
+        response += '%s' %self.config['response_body']
         return response
 
     def header(self, header, value):
         self.config['headers'][header] = value
         return self
-    
+ 
     def __setitem__(self, header, value): self.header(header, value)
     def __getitem__(self, header): return self.config['headers'][header]
 
@@ -255,9 +296,17 @@ class NoViewsAssigned(Exception): pass
 
 _hub = None
 
-def set_config(config=None):
+def get_hub():
+    global _hub
+    return _hub
+
+def init(config=None):
     global _hub
     _hub = _hub if _hub else Juno(config)
+
+def set_config(key, value):
+    global _hub
+    _hub.config[key] = value
 
 def get_config(key):
     global _hub
@@ -267,42 +316,41 @@ def run():
     if _hub: _hub.run()
     else: raise NoViewsAssigned('No urls attached to Juno')
 
-def route(url, method='*'):
+def route(url=None, method='*'):
     global _hub
-    if _hub is None: set_config()
-    def wrap(f):
-        _hub.route(url, f, method)
+    if _hub is None: init()
+    def wrap(f): _hub.route(url, f, method)
     return wrap
 
-def post(url):   return route(url, 'post')
-def get(url):    return route(url, 'get')
-def head(url):   return route(url, 'head')
-def put(url):    return route(url, 'put')
-def delete(url): return route(url, 'delete')
+def post(url=None):   return route(url, 'post')
+def get(url=None):    return route(url, 'get')
+def head(url=None):   return route(url, 'head')
+def put(url=None):    return route(url, 'put')
+def delete(url=None): return route(url, 'delete')
 
 _response = None
 
-def redirect(url):
+def html():
     global _response
-    _response = JunoResponse(status=302, body='Location: %s' %url)
-    return _response
+    return _response.append('<html>')
 
 def respond(**kwargs):
     global _response
-    _response = JunoResponse(**kwargs)
+    _response.config.update(kwargs)
     return _response
+
+def redirect(url):
+    global _response
+    return JunoResponse(status=302, response_body='Location: %s' %url)
 
 def notfound(template=None):
     """ Add the 404 template"""
-    if template is None: 
-        global _hub
-        template = _hub.config['404_template'] 
+    if template is None: template = get_config['404_template']
     return JunoResponse(status=404)
 
 def media_serve(web, file):
-    global _hub
     file = get_config('media_root') + file
     j = JunoResponse()
-    type = mimetypes.guess_type(file)
+    type = mimetypes.guess_type(file)[0]
     if type is not None: j['Content-Type'] = type
-    j.append(open(file, 'r').read())
+    return j.append(open(file, 'r').read())

@@ -7,7 +7,7 @@ def index(web):
             <head> <title>index</title> </head>
             <body> index </body>
         </html>'''
-    return JunoResponse(body=body, status=200)
+    return JunoResponse(response_body=body, status=200)
 
 @get('/wildcard/*:name/')
 def wildcard(web, name): return str(name)
@@ -16,11 +16,11 @@ def wildcard(web, name): return str(name)
 def x(web, a, b, c):
     return str(a) + str(b) + str(c)
 
-@get('/query/')
+@get()
 def query(web):
     return 'Query: %s' %web.input()
 
-@route('/form/')
+@route()
 def form(web):
     return '''
         <form action='/post_test' name='form_test' method='post'>
@@ -30,7 +30,7 @@ def form(web):
             <input type='submit' value='test' />
         </form>'''
 
-@post('/post_test/')
+@post()
 def post_test(web): return 'value of "word": %s' %web.post('word')
 
 @get('/json_test/')
@@ -43,8 +43,18 @@ def json(web):
 def user_agent(web):
     return 'User Agent: %s' %web.headers['HTTP_USER_AGENT']
 
-@get('/implicit/')
+@get()
 def implicit(web):
-    respond(body='Hi there')
+    respond(response_body='Hi there')
 
-if __name__ == '__main__': run()
+@get()
+def html_chain(web):
+    html().                                         \
+        head().title('juno html test').endhead().   \
+        body().                                     \
+            div().text('asdf').enddiv().            \
+        endbody().                                  \
+    endhtml()
+
+if __name__ == '__main__':
+    run()

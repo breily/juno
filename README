@@ -4,8 +4,10 @@ Juno
 - Juno is a simple web framework to allow rapid prototyping of Python
   applications
 
-A Juno 'Hello World' Application
---------------------------------
+Say 'Hello, World' in Juno
+--------------------------
+
+To start off:
 
 ] from juno import *
 ] 
@@ -39,11 +41,29 @@ Use headers:
 ] def user_agent(web):
 ]     return 'Hello, %s' %web.headers['HTTP_USER_AGENT']
 
+Return HTML:
+
+] @get('/html/')
+] def html_chain(web):
+]     html().                                               \
+]         head().css('/media/site.css').endhead().          \
+]         body().                                           \
+]             div(id='hi').text('Hello, World').enddiv().   \
+]         endbody().                                        \
+]     endhtml()                                             \
+
+Use implicit urls:
+
+] @get()
+] def hi(web):  # Found at /hi/
+]     return 'Hi there!'
+
 Features
 --------
 
-- Assign functions based on urls and rrquest methods.
-- Use url wildcards to pass named arguments to your functions.
+- Assign functions based on URLs and request methods.
+- Use URL wildcards to pass named arguments to your functions.
 - Handle GET and POST queries.
+- Serve static files.
 - Currently only interfaces to server through SCGI.
-- Ties to SQLAlchemy and Jinja are in progress.
+- Ties to SQLAlchemy and Jinja are in progress/planned.
