@@ -224,13 +224,23 @@ class JunoResponse:
         """ Attaches a div with the given attributes, i.e.:
             {'id': 'first'} => 'id="first"'
         """    
-        return self.append('<div %s>' %' '.join(
-            ['%s="%s"' %(k, v) for k, v in kwargs.items()]
-        ))
+        return self.append('<div %s>' %self._tag_info(**kwargs))
     
     def enddiv(self):
         return self.append('</div>')
     
+    def form(self, **kwargs):
+        return self.append('<form %s>' %self._tag_info(**kwargs))
+
+    def endform(self):
+        return self.append('</form>')
+    
+    def input(self, **kwargs):
+        return self.append('<input %s />' %self._tag_info(**kwargs))
+    
+    def br(self):
+        return self.append('<br />')
+
     def text(self, text):
         return self.append(text)
 
@@ -260,6 +270,9 @@ class JunoResponse:
 
     def __getattr__(self, attr):
         return self.config[attr]
+
+    def _tag_info(self, **kwargs):
+        return ' '.join(['%s="%s"' %(k, v) for k, v in kwargs.items()])
 
     def __repr__(self):
         return '<JunoResponse: %s %s>' %(self.status, self.status_codes[self.status])
@@ -373,15 +386,28 @@ def endbody():
     return _response.endbody()
 
 def div(**kwargs):
-    """ Attaches a div with the given attributes, i.e.:
-        {'id': 'first'} => 'id="first"'
-    """    
     global _response
     return _response.div(**kwargs)
 
 def enddiv():
     global _response
     return _response.enddiv()
+
+def form(**kwargs):
+    global _response
+    return _response.form(**kwargs)
+
+def endform():
+    global _response
+    return _response.endform()
+
+def input(**kwargs):
+    global _response
+    return _response.input(**kwargs)
+
+def br():
+    global _response
+    return _response.br()
 
 def text(text):
     global _response

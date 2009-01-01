@@ -20,18 +20,21 @@ def x(web, a, b, c):
 def query(web):
     return 'Query: %s' %web.input()
 
-@route()
-def form(web):
-    return '''
-        <form action='/post_test' name='form_test' method='post'>
-            <input type='text' name='word' />   <br />
-            <input type='text' name='two' />    <br />
-            <input type='text' name='three' />  <br />
-            <input type='submit' value='test' />
-        </form>'''
+@route('/form/')
+def form_show(web):
+    html() title('form test')
+        body()
+            form(action='/post_test/', name='form_test', method='post')
+                input(type='text', name='one').br()
+                input(type='text', name='two').br()
+                input(type='text', name='three').br()
+                input(type='submit', value='go')
+            endform()
+        endbody()
+    endhtml()
 
 @post()
-def post_test(web): return 'value of "word": %s' %web.post('word')
+def post_test(web): return 'value of "word": %s' %web.post('one')
 
 @get('/json_test/')
 def json(web):
