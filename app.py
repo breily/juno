@@ -22,15 +22,15 @@ def query(web):
 
 @route('/form/')
 def form_show(web):
-    html() title('form test')
-        body()
-            form(action='/post_test/', name='form_test', method='post')
-                input(type='text', name='one').br()
-                input(type='text', name='two').br()
-                input(type='text', name='three').br()
-                input(type='submit', value='go')
-            endform()
-        endbody()
+    html().title('form test').                                          \
+        body().                                                         \
+            form(action='/post_test/', name='form_test', method='post').\
+                input(type='text', name='one').br().                    \
+                input(type='text', name='two').br().                    \
+                input(type='text', name='three').br().                  \
+                input(type='submit', value='go').                       \
+            endform().                                                  \
+        endbody().                                                      \
     endhtml()
 
 @post()
@@ -39,7 +39,7 @@ def post_test(web): return 'value of "word": %s' %web.post('one')
 @get('/json_test/')
 def json(web):
     j = JunoResponse()
-    j['Content-Type'] = 'text/json'
+    j['Content-Type'] = 'application/json'
     return j.append('''{'main': ['a': 5, 'b': 1]}''')
 
 @get('/ua/')

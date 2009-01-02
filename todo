@@ -1,6 +1,8 @@
 > test post with other inputs (specifically files)
 > would reassigning any operators work? i like | for something
 
+> rewrite '/*:word/' to '^/(?<word>.*)/$'
+
 >>>> possible: make a global response object for each request, so no explicit return
   is required
   def view(request):

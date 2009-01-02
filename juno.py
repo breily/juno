@@ -1,5 +1,5 @@
-import SocketServer
 import mimetypes
+import handlers
 
 class Juno:
     def __init__(self, config=None):
@@ -12,8 +12,9 @@ class Juno:
         global media_serve
         self.config = {
                 'log':      True,
-                'mode':     'scgi',
-                'scgi_port': 6969,
+                'mode':     'dev',
+                'scgi_port':    6969,
+                'dev_port':     8000,
                 '404_template': '',
                 '500_template': '',
                 'name': 'JunoApp',
@@ -26,34 +27,25 @@ class Juno:
 
     def run(self):
         """Runs the Juno hub, in the set mode (default now is scgi). """
-        if self.config['mode'] == 'self':
-            print 'Juno would run its own server here...'
-        if self.config['mode'] == 'scgi':
-            SCGIRequestHandler.process = self.request
-            server = SocketServer.ThreadingTCPServer(
-                ('', self.config['scgi_port']), SCGIRequestHandler)
-            try:
-                server.serve_forever()
-            except KeyboardInterrupt:
-                server.socket.close()
-                print '\nexiting juno...'
-            except:
-                print '\nerror; exiting juno...'
-                server.socket.close()
+        if self.config['mode'] == 'dev':
+            handlers.run_dev('', self.config['dev_port'], self.request)
+        elif self.config['mode'] == 'scgi':
+            handlers.run_scgi('', self.config['scgi_port'], self.request)
         else:
             print 'error: only scgi is supported now'
             print 'exiting juno...'
 
-    def request(self, request):
+    def request(self, request, method='*', **kwargs):
         """Called when a request is received, routes a url to its request. 
         Returns a string, currently set as a JunoResponse.render()."""
-        if self.config['log']: print request.raw
+        req_obj = JunoRequest(kwargs)
+        if self.config['log']: print req_obj.raw
         for route in self.routes:
-            if route.match(request):
+            if route.match(request, method):
                 if self.config['log']: print 'match: %s' %route
                 global _response
                 _response = JunoResponse()
-                response = route.dispatch()
+                response = route.dispatch(req_obj)
                 if response is None: response = _response
                 if not isinstance(response, JunoResponse):
                     response = JunoResponse(response_body=str(response))
@@ -94,9 +86,9 @@ class JunoRoute:
         self.method = method.upper()
         self.params = []
     
-    def match(self, request):
+    def match(self, request, method):
         """Matches a request uri to this url object. """
-        req_parts = request.DOCUMENT_URI.split('/')
+        req_parts = request.split('/')
         for a, b in zip(req_parts, self.url_parts):
             # if no modifiers, just check string equality
             if not self.has_modifiers(b):
@@ -109,8 +101,7 @@ class JunoRoute:
                     self.params.append((y, a))
                     continue
             return False
-        if self.method == '*' or self.method == request.REQUEST_METHOD:
-            self.request = request
+        if self.method == '*' or self.method == method:
             return True
         return False
 
@@ -121,9 +112,9 @@ class JunoRoute:
             elif i == 0 or b[i - 1] != '\'': return True
         return False
             
-    def dispatch(self):
-        if self.params: return self.func(self.request, **dict(self.params))
-        return self.func(self.request)
+    def dispatch(self, req):
+        if self.params: return self.func(req, **dict(self.params))
+        return self.func(req)
 
     def __repr__(self):
         return '<JunoRoute: %s %s - %s()>' %(self.method, self.url, self.func.__name__)
@@ -131,15 +122,18 @@ class JunoRoute:
 class JunoRequest:
     def __init__(self, request):
         self.headers = request
-        del self.headers['POST_DATA']
-        if request['DOCUMENT_URI'][-1] != '/':
-            request['DOCUMENT_URI'] += '/'
+        if 'DOCUMENT_URI' not in request: request['DOCUMENT_URI'] = '/'
+        elif request['DOCUMENT_URI'][-1] != '/': request['DOCUMENT_URI'] += '/'
         self.raw = request
         self.raw['input'] = {}
         self.location = request['DOCUMENT_URI']
-        self.full_location = request['REQUEST_URI']
-        self.parse_query_string('QUERY_STRING')
-        self.parse_query_string('POST_DATA')
+        if 'REQUEST_URI' in request:
+            self.full_location = request['REQUEST_URI']
+        if 'QUERY_STRING' in request:    
+            self.parse_query_string('QUERY_STRING')
+        if 'POST_DATA' in request:    
+            self.parse_query_string('POST_DATA')
+            del self.headers['POST_DATA']
     
     def parse_query_string(self, header):
         """Adds elements of the query string to ['input'].  If the key
@@ -159,8 +153,8 @@ class JunoRequest:
     def __getattr__(self, attr):
         if attr in self.keys():
             return self.raw[attr]
-        raise NameError
-        
+        return None
+
     def input(self, arg=None):
         if arg is None: return self.raw['input']
         if self.raw['input'].has_key(arg):
@@ -276,37 +270,6 @@ class JunoResponse:
 
     def __repr__(self):
         return '<JunoResponse: %s %s>' %(self.status, self.status_codes[self.status])
-
-class SCGIRequestHandler(SocketServer.BaseRequestHandler):
-    def finish(self):
-        self.request.close()
-        print self.client_address, 'disconnected'
-
-    def handle(self):
-        data = self.request.recv(1024)
-        if data:
-            request_dict = self.build_scgi_dict(data)
-            self.request.send(self.process(request_dict))
-        self.request.close()
-
-    def build_scgi_dict(self, data):
-        """
-        Might not be the best way to parse the SCGI request.  Doesn't use
-        the provided length at all, so if for some reason a header starts
-        with ',' then it will break (seems unlikely though).
-        """
-        data_len, data = data.split(':', 1)
-        count = 0
-        data_list = data.split(chr(0))
-        data_dict = {}
-        while data_list[count][0] != ',':
-            data_dict[data_list[count]] = data_list[count + 1]
-            count += 2
-        msg = data_list[count][1:]
-        data_dict['POST_DATA'] = msg
-        return JunoRequest(data_dict)
-    
-    def process(self, data): return ''
 
 class NoViewsAssigned(Exception): pass
 
