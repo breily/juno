@@ -58,6 +58,12 @@ Use implicit urls:
 ] def hi(web):  # Found at /hi/
 ]     return 'Hi there!'
 
+Use a template (Juno uses Jinja2 templates):
+
+] @get('/hi_template/:name/')
+] def template_hi(web, name):
+]     return template('hello.html').render(name=name)
+
 Features
 --------
 

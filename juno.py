@@ -1,4 +1,6 @@
 import mimetypes
+import re
+import jinja2
 import handlers
 
 class Juno:
@@ -15,14 +17,17 @@ class Juno:
                 'mode':     'dev',
                 'scgi_port':    6969,
                 'dev_port':     8000,
-                '404_template': '',
-                '500_template': '',
+                '404_template': '404.html',
+                '500_template': '500.html',
                 'name': 'JunoApp',
                 'media_url': '/media/*:file/',
                 'media_root': './media/',
                 'media_handler': media_serve,
+                'template_dir': './templates/',
                 }
         if config is not None: self.config.update(config)
+        self.config['template_env'] = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(self.config['template_dir']))
         self.route(self.config['media_url'], self.config['media_handler'], '*')
 
     def run(self):
@@ -50,7 +55,7 @@ class Juno:
                 if not isinstance(response, JunoResponse):
                     response = JunoResponse(response_body=str(response))
                 return response.render()
-        return JunoResponse(body='page not found', status=404).render()        
+        return notfound(error='No matching routes registered')
 
     def route(self, url, func, method):
         """Attaches a view to a url or list of urls, for a given function. """
@@ -66,58 +71,46 @@ class Juno:
         return '<Juno: %s>' %self.config['name']
 
 class JunoRoute:
-    """Modifiers:
-        '*' - Matches previous characted repeated; by itself, matches anything
-        ':' - Separator to capture results into names
-
-        Considering: 
-            '@' - Matches any non-numeric character
-            '#' - Matches any numeric character
-
-        Example: '/hello/*:name/' will catch '/hello/brian/', and name = 'brian'
-    """    
-    modifiers = ['*', ':']
+    """Uses a simplified regex to grab url parts:
+    i.e., '/hello/*:name/' compiles to '^/hello/(?P<name>\w+)/'
+    Considering adding '#' to match numbers and '@' to match letters
+    i.e. '/id/#:id/' => '^/id/(?P<id>\d+)/'
+    and  '/hi/@:name/' => '^/hi/(?P<name>[a-zA-Z])/'
+    """
     def __init__(self, url, func, method):
         if url[0] != '/': url = '/' + url
         if url[-1] != '/': url += '/'
-        self.url = url
-        self.url_parts = url.split('/')
+        self.old_url = url
+        # Transform '/hello/*:name/' forms into '^/hello/(?<name>.*)'
+        buffer = '^'
+        splat_re = re.compile('^\*?:(?P<var>\w+)$')
+        for part in url.split('/'):
+            if not part: continue
+            buffer += '/'
+            match_obj = splat_re.match(part)
+            if match_obj is None: buffer += part
+            else: buffer += '(?P<' + match_obj.group('var') + '>.*)'
+        if buffer[-1] != ')': buffer += '/$'        
+        self.url = re.compile(buffer)
         self.func = func
         self.method = method.upper()
-        self.params = []
+        self.params = {}
     
     def match(self, request, method):
         """Matches a request uri to this url object. """
-        req_parts = request.split('/')
-        for a, b in zip(req_parts, self.url_parts):
-            # if no modifiers, just check string equality
-            if not self.has_modifiers(b):
-                if a == b: continue
-                else: return False
-            # just matches '/*:name/' type constructs
-            if ':' in b:
-                x, y = b.split(':')
-                if x in ['*', '']:
-                    self.params.append((y, a))
-                    continue
-            return False
+        match_obj = self.url.match(request)
+        if match_obj is None: return False
         if self.method == '*' or self.method == method:
+            self.params.update(match_obj.groupdict())
             return True
         return False
 
-    def has_modifiers(self, url):
-        """Checks for unescaped modifier characters in url segment."""
-        for i in range(len(url)):
-            if url[i] not in self.modifiers: continue
-            elif i == 0 or b[i - 1] != '\'': return True
-        return False
-            
     def dispatch(self, req):
         if self.params: return self.func(req, **dict(self.params))
         return self.func(req)
 
     def __repr__(self):
-        return '<JunoRoute: %s %s - %s()>' %(self.method, self.url, self.func.__name__)
+        return '<JunoRoute: %s %s - %s()>' %(self.method, self.old_url, self.func.__name__)
 
 class JunoRequest:
     def __init__(self, request):
@@ -385,10 +378,9 @@ def redirect(url):
     global _response
     return JunoResponse(status=302, response_body='Location: %s' %url)
 
-def notfound(template=None):
-    """ Add the 404 template"""
-    if template is None: template = get_config['404_template']
-    return JunoResponse(status=404)
+def notfound(error='Unspecified error', file=None):
+    file = file if file else get_config('404_template')
+    return template(file).render(error=error)
 
 def media_serve(web, file):
     file = get_config('media_root') + file
@@ -396,3 +388,7 @@ def media_serve(web, file):
     type = mimetypes.guess_type(file)[0]
     if type is not None: j['Content-Type'] = type
     return j.append(open(file, 'r').read())
+
+def template(path):
+    global _hub
+    return _hub.config['template_env'].get_template(path)
