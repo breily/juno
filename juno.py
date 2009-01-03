@@ -4,7 +4,7 @@ import os
 import jinja2
 import handlers
 
-class Juno:
+class Juno(object):
     def __init__(self, config=None):
         """Takes an optional configuration dictionary. """
         global _hub
@@ -31,14 +31,16 @@ class Juno:
             loader=jinja2.FileSystemLoader(self.config['template_dir']))
         self.route(self.config['media_url'], self.config['media_handler'], '*')
 
-    def run(self):
+    def run(self, mode=None):
         """Runs the Juno hub, in the set mode (default now is scgi). """
-        if self.config['mode'] == 'dev':
+        # If a mode is specified, use it. Otherwise use the mode from the config.
+        mode = mode if mode else self.config['mode']
+        if mode == 'dev':
             handlers.run_dev('', self.config['dev_port'], self.request)
-        elif self.config['mode'] == 'scgi':
+        elif mode == 'scgi':
             handlers.run_scgi('', self.config['scgi_port'], self.request)
         else:
-            print 'error: only scgi is supported now'
+            print 'error: only scgi and the dev server are supported now'
             print 'exiting juno...'
 
     def request(self, request, method='*', **kwargs):
@@ -66,7 +68,7 @@ class Juno:
     def __repr__(self):
         return '<Juno: %s>' %self.config['name']
 
-class JunoRoute:
+class JunoRoute(object):
     """Uses a simplified regex to grab url parts:
     i.e., '/hello/*:name/' compiles to '^/hello/(?P<name>\w+)/'
     Considering adding '#' to match numbers and '@' to match letters
@@ -105,7 +107,7 @@ class JunoRoute:
     def __repr__(self):
         return '<JunoRoute: %s %s - %s()>' %(self.method, self.old_url, self.func.__name__)
 
-class JunoRequest:
+class JunoRequest(object):
     def __init__(self, request):
         self.headers = request
         if 'DOCUMENT_URI' not in request: request['DOCUMENT_URI'] = '/'
@@ -157,7 +159,7 @@ class JunoRequest:
     def __repr__(self):
         return '<JunoRequest: %s>' %self.location
 
-class JunoResponse:
+class JunoResponse(object):
     status_codes = {200: 'OK', 302: 'Found', 404: 'Not Found'}
     def __init__(self, config=None, **kwargs):
         self.config = {

@@ -60,4 +60,20 @@ Features
 - Use URL wildcards to pass named arguments to your functions.
 - Builtin ties to Jinja2 templates
 - Serve static files.
-- Currently only interfaces to server through SCGI.
+- Currently only interfaces to server through SCGI, but includes a development server.
+
+Help
+----
+
+To set up SCGI for Nginx, use something like (make sure you have mod_scgi):
+    
+    http {
+        server {
+            location / {
+                scgi_pass   127.0.0.1:6969;
+                include     scgi_vars;
+            }
+        }
+    }
+
+    
