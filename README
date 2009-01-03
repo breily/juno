@@ -59,6 +59,5 @@ Features
 - Assign functions based on URLs and request methods.
 - Use URL wildcards to pass named arguments to your functions.
 - Builtin ties to Jinja2 templates
-- Handle GET and POST queries.
 - Serve static files.
 - Currently only interfaces to server through SCGI.
