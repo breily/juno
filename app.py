@@ -7,7 +7,7 @@ def index(web):
             <head> <title>index</title> </head>
             <body> index </body>
         </html>'''
-    return JunoResponse(response_body=body, status=200)
+    return JunoResponse(body=body, status=200)
 
 @get('/wildcard/*:name/')
 def wildcard(web, name): return str(name)
@@ -44,11 +44,11 @@ def json(web):
 
 @get('/ua/')
 def user_agent(web):
-    return 'User Agent: %s' %web.headers['HTTP_USER_AGENT']
+    return 'User Agent: %s' %web.headers['User-Agent']
 
-@get()
+@get('/implicit/')
 def implicit(web):
-    respond(response_body='Hi there')
+    append('Hi there')
 
 @get()
 def html_chain(web):

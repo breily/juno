@@ -24,7 +24,3 @@
     model('item', ('name', 'string'))
     data('item').id(4).order('name')
     create('item', name='asdf')
-
-> go through and clean up code
-
-> get rid of html chain methods?

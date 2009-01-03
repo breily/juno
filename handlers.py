@@ -19,8 +19,12 @@ class HTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_request(self):
         data = str(self.headers).split('\r\n')
         parsed = urlparse.urlparse(self.path)
-        data_dict = {'REQUEST_URI': self.path, 'REQUEST_METHOD': self.command,
-                     'QUERY_STRING': parsed.query, 'DOCUMENT_URI': parsed.path}
+        data_dict = {
+             'REQUEST_URI': self.path, 
+             'REQUEST_METHOD': self.command,
+             'QUERY_STRING': parsed.query, 
+             'DOCUMENT_URI': parsed.path if parsed.path[-1] == '/' else parsed.path + '/',
+              }
         for line in data:
             if not line: continue
             (x, y) = [a.strip() for a in line.split(':', 1)]

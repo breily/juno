@@ -1,5 +1,6 @@
 import mimetypes
 import re
+import os
 import jinja2
 import handlers
 
@@ -44,28 +45,23 @@ class Juno:
         """Called when a request is received, routes a url to its request. 
         Returns a string, currently set as a JunoResponse.render()."""
         req_obj = JunoRequest(kwargs)
-        if self.config['log']: print req_obj.raw
         for route in self.routes:
-            if route.match(request, method):
-                if self.config['log']: print 'match: %s' %route
-                global _response
-                _response = JunoResponse()
-                response = route.dispatch(req_obj)
-                if response is None: response = _response
-                if not isinstance(response, JunoResponse):
-                    response = JunoResponse(response_body=str(response))
-                return response.render()
+            if not route.match(request, method): continue
+            global _response
+            _response = JunoResponse()
+            response = route.dispatch(req_obj)
+            if response is None: response = _response
+            if not isinstance(response, JunoResponse):
+                response = JunoResponse(body=str(response))
+            return response.render()
         return notfound(error='No matching routes registered')
 
     def route(self, url, func, method):
         """Attaches a view to a url or list of urls, for a given function. """
         if url is None: url = '/' + func.__name__ + '/'
-        if self.config['log']: print 'creating: %s for %s' %(url, func.__name__)
-        if type(url) == str:
-            self.routes.append(JunoRoute(url, func, method))
+        if type(url) == str: self.routes.append(JunoRoute(url, func, method))
         else:
-            for u in url:
-                self.routes.append(JunoRoute(u, func, method))
+            for u in url: self.routes.append(JunoRoute(u, func, method)) 
 
     def __repr__(self):
         return '<Juno: %s>' %self.config['name']
@@ -82,32 +78,29 @@ class JunoRoute:
         if url[-1] != '/': url += '/'
         self.old_url = url
         # Transform '/hello/*:name/' forms into '^/hello/(?<name>.*)'
-        buffer = '^'
         splat_re = re.compile('^\*?:(?P<var>\w+)$')
+        buffer = '^'
         for part in url.split('/'):
             if not part: continue
-            buffer += '/'
             match_obj = splat_re.match(part)
-            if match_obj is None: buffer += part
-            else: buffer += '(?P<' + match_obj.group('var') + '>.*)'
+            if match_obj is None: buffer += '/' + part
+            else: buffer += '/(?P<' + match_obj.group('var') + '>.*)'
         if buffer[-1] != ')': buffer += '/$'        
         self.url = re.compile(buffer)
         self.func = func
         self.method = method.upper()
         self.params = {}
-    
+
     def match(self, request, method):
         """Matches a request uri to this url object. """
         match_obj = self.url.match(request)
         if match_obj is None: return False
-        if self.method == '*' or self.method == method:
-            self.params.update(match_obj.groupdict())
-            return True
-        return False
+        if self.method != '*' and self.method != method: return False
+        self.params.update(match_obj.groupdict())
+        return True
 
     def dispatch(self, req):
-        if self.params: return self.func(req, **dict(self.params))
-        return self.func(req)
+        return self.func(req, **self.params)
 
     def __repr__(self):
         return '<JunoRoute: %s %s - %s()>' %(self.method, self.old_url, self.func.__name__)
@@ -122,10 +115,9 @@ class JunoRequest:
         self.location = request['DOCUMENT_URI']
         if 'REQUEST_URI' in request:
             self.full_location = request['REQUEST_URI']
-        if 'QUERY_STRING' in request:    
-            self.parse_query_string('QUERY_STRING')
-        if 'POST_DATA' in request:    
-            self.parse_query_string('POST_DATA')
+        self.parse_query_string('QUERY_STRING')
+        self.parse_query_string('POST_DATA')
+        if 'POST_DATA' in self.headers:
             del self.headers['POST_DATA']
     
     def parse_query_string(self, header):
@@ -169,73 +161,20 @@ class JunoResponse:
     status_codes = {200: 'OK', 302: 'Found', 404: 'Not Found'}
     def __init__(self, config=None, **kwargs):
         self.config = {
-            'response_body': '',
+            'body': '',
             'status': 200,
-            'headers': {
-                'Content-Type': 'text/html',
-            },
+            'headers': { 'Content-Type': 'text/html', },
         }
         if config is None: config = {}
         self.config.update(config)
         self.config.update(kwargs)
-        self.config['headers']['Content-Length'] = len(self.config['response_body'])
+        self.config['headers']['Content-Length'] = len(self.config['body'])
     
-    def html(self):
-        return self.append('<html>')
-
-    def endhtml(self):
-        return self.append('</html>')
-
-    def head(self):
-        return self.append('<head>')
-    
-    def endhead(self):
-        return self.append('</head>')
-
-    def title(self, title):
-        return self.append('<title>%s</title>' %title)
-
-    def css(self, href):
-        return self.append('<link href="%s" type="text/css" rel="styleshee" />' %href)   
-
-    def script(self, src):
-        return self.append('<script src="%s" type="text/javascript"></script>' %src)
-
-    def body(self):
-        return self.append('<body>')
-    
-    def endbody(self):
-        return self.append('</body>')
-
-    def div(self, **kwargs):
-        """ Attaches a div with the given attributes, i.e.:
-            {'id': 'first'} => 'id="first"'
-        """    
-        return self.append('<div %s>' %self._tag_info(**kwargs))
-    
-    def enddiv(self):
-        return self.append('</div>')
-    
-    def form(self, **kwargs):
-        return self.append('<form %s>' %self._tag_info(**kwargs))
-
-    def endform(self):
-        return self.append('</form>')
-    
-    def input(self, **kwargs):
-        return self.append('<input %s />' %self._tag_info(**kwargs))
-    
-    def br(self):
-        return self.append('<br />')
-
-    def text(self, text):
-        return self.append(text)
-
     def append(self, text):
-        self.config['response_body'] += str(text)
-        self.config['headers']['Content-Length'] = len(self.config['response_body'])
+        self.config['body'] += str(text)
+        self.config['headers']['Content-Length'] = len(self.config['body'])
         return self
-
+    
     def __iadd__(self, text):
         return self.append(text)
 
@@ -245,7 +184,7 @@ class JunoResponse:
         for header, val in self.config['headers'].items():
             response += ': '.join((header, str(val))) + '\r\n'
         response += '\r\n'
-        response += '%s' %self.config['response_body']
+        response += '%s' %self.config['body']
         return response
 
     def header(self, header, value):
@@ -258,19 +197,10 @@ class JunoResponse:
     def __getattr__(self, attr):
         return self.config[attr]
 
-    def _tag_info(self, **kwargs):
-        return ' '.join(['%s="%s"' %(k, v) for k, v in kwargs.items()])
-
     def __repr__(self):
         return '<JunoResponse: %s %s>' %(self.status, self.status_codes[self.status])
 
-class NoViewsAssigned(Exception): pass
-
 _hub = None
-
-def get_hub():
-    global _hub
-    return _hub
 
 def init(config=None):
     global _hub
@@ -283,6 +213,8 @@ def set_config(key, value):
 def get_config(key):
     global _hub
     return _hub.config[key] if key in _hub.config else None
+
+class NoViewsAssigned(Exception): pass
 
 def run():
     if _hub: _hub.run()
@@ -302,81 +234,17 @@ def delete(url=None): return route(url, 'delete')
 
 _response = None
 
-# I don't like doing it this way, so I'll try to think of something better.
-# Also, add div's kwargs functionality to other tags (and make it optional)
-
-def html():
+def append(body):
     global _response
-    return _response.html()
+    return _response.append(body)
 
-def endhtml():
+def header(key, value):
     global _response
-    return _response.endhtml()
-
-def head():
-    global _response
-    return _response.head()
-
-def endhead():
-    global _response
-    return _response.endhead()
-
-def title(title):
-    global _response
-    return _response.title(title)
-
-def css(href):
-    global _response
-    return _response.css(href)
-
-def script(src):
-    global _response
-    return _response.script(src)
-
-def body():
-    global _response
-    return _response.body()
-
-def endbody():
-    global _response
-    return _response.endbody()
-
-def div(**kwargs):
-    global _response
-    return _response.div(**kwargs)
-
-def enddiv():
-    global _response
-    return _response.enddiv()
-
-def form(**kwargs):
-    global _response
-    return _response.form(**kwargs)
-
-def endform():
-    global _response
-    return _response.endform()
-
-def input(**kwargs):
-    global _response
-    return _response.input(**kwargs)
-
-def br():
-    global _response
-    return _response.br()
-
-def text(text):
-    global _response
-    return _response.text(text)
-
-def respond(**kwargs):
-    global _response
-    _response.config.update(kwargs)
-    return _response
+    return _response.header(key, value)
 
 def redirect(url):
     global _response
-    return JunoResponse(status=302, response_body='Location: %s' %url)
+    return JunoResponse(status=302, body='Location: %s' %url)
 
 def notfound(error='Unspecified error', file=None):
     file = file if file else get_config('404_template')
@@ -384,10 +252,14 @@ def notfound(error='Unspecified error', file=None):
 
 def media_serve(web, file):
     file = get_config('media_root') + file
-    j = JunoResponse()
+    if not os.access(file, os.F_OK):
+        return notfound(error='media file could not be located')
+    if os.path.isdir(file):
+        return notfound(error='that location is a directory')
     type = mimetypes.guess_type(file)[0]
-    if type is not None: j['Content-Type'] = type
-    return j.append(open(file, 'r').read())
+    if type is not None: header('Content-Type', type)
+    else: header('Content-Type', 'text/plain')
+    return append(open(file, 'r').read())
 
 def template(path):
     global _hub
