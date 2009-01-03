@@ -41,17 +41,6 @@ Use headers:
 ] def user_agent(web):
 ]     return 'Hello, %s' %web.headers['HTTP_USER_AGENT']
 
-Return HTML:
-
-] @get('/html/')
-] def html_chain(web):
-]     html().                                               \
-]         head().css('/media/site.css').endhead().          \
-]         body().                                           \
-]             div(id='hi').text('Hello, World').enddiv().   \
-]         endbody().                                        \
-]     endhtml()                                             \
-
 Use implicit urls:
 
 ] @get()
