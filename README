@@ -71,7 +71,6 @@ To set up SCGI for Nginx, use something like (make sure you have mod_scgi):
         server {
             location / {
                 scgi_pass   127.0.0.1:6969;
-                include     scgi_vars;
             }
         }
     }
