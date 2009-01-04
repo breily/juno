@@ -47,6 +47,18 @@ Use a template (Juno uses Jinja2 templates):
 ] def template_hi(web, name):
 ]     return template('hello.html').render(name=name)
 
+Don't want to say hi? Send them elsewhere:
+
+] @get('/go/away/')
+] def go_away(web):
+]     redirect('http://a.nice.person.com')
+
+Or hide:
+
+] @get('/hiding/')
+] def hidden(web):
+]     notfound(error="you can't see me")
+
 Features
 --------
 
