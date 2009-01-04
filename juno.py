@@ -246,7 +246,9 @@ def header(key, value):
 
 def redirect(url):
     global _response
-    return JunoResponse(status=302, body='Location: %s' %url)
+    _response.config['status'] = 302
+    _response.config['headers'] = {'Location': url}
+    return _response
 
 def notfound(error='Unspecified error', file=None):
     file = file if file else get_config('404_template')
