@@ -29,6 +29,7 @@ class Juno(object):
         if config is not None: self.config.update(config)
         self.config['template_env'] = jinja2.Environment(
             loader=jinja2.FileSystemLoader(self.config['template_dir']))
+        # set up the media handler    
         self.route(self.config['media_url'], self.config['media_handler'], '*')
 
     def run(self, mode=None):
@@ -202,6 +203,10 @@ class JunoResponse(object):
     def __repr__(self):
         return '<JunoResponse: %s %s>' %(self.status, self.status_codes[self.status])
 
+#
+#   Functions to deal with the global Juno object (_hub)
+#
+
 _hub = None
 
 def init(config=None):
@@ -222,6 +227,10 @@ def run():
     if _hub: _hub.run()
     else: raise NoViewsAssigned('No urls attached to Juno')
 
+#
+#   Functions to add routes based on request methods
+#
+
 def route(url=None, method='*'):
     global _hub
     if _hub is None: init()
@@ -234,6 +243,10 @@ def head(url=None):   return route(url, 'head')
 def put(url=None):    return route(url, 'put')
 def delete(url=None): return route(url, 'delete')
 
+#
+#   Functions to deal with the global response object (_response)
+#
+
 _response = None
 
 def append(body):
@@ -243,6 +256,10 @@ def append(body):
 def header(key, value):
     global _response
     return _response.header(key, value)
+
+#
+#   Convenience functions for 404s and redirects
+#
 
 def redirect(url):
     global _response
@@ -254,6 +271,10 @@ def notfound(error='Unspecified error', file=None):
     file = file if file else get_config('404_template')
     return template(file).render(error=error)
 
+#
+#   Default media serving function
+#
+
 def media_serve(web, file):
     file = get_config('media_root') + file
     if not os.access(file, os.F_OK):
@@ -264,6 +285,10 @@ def media_serve(web, file):
     if type is not None: header('Content-Type', type)
     else: header('Content-Type', 'text/plain')
     return append(open(file, 'r').read())
+
+#
+#   Templating
+#
 
 def template(path):
     global _hub
