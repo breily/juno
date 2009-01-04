@@ -130,8 +130,9 @@ class JunoRequest(object):
         self.parse_query_string('QUERY_STRING')
         self.parse_query_string('POST_DATA')
         # Find the right user agent header
-        if 'SCGI' in request: self.user_agent = request['HTTP_USER_AGENT']
-        else: self.user_agent = request['User-Agent']
+        if 'HTTP_USER_AGENT' in request: self.user_agent = request['HTTP_USER_AGENT']
+        elif 'User-Agent' in request: self.user_agent = request['User-Agent']
+        else: self.user_agent = '?'
     
     def parse_query_string(self, header):
         """Adds elements of the query string to ['input'].  If the key
@@ -306,14 +307,14 @@ def static_serve(web, file):
 #   Templating
 #
 
-def template(path):
-    global _hub
-    return _hub.config['template_env'].get_template(path)
+def template(template_path, **kwargs):
+    t = _hub.config['template_env'].get_template(template_path)
+    if not kwargs: return t
+    return t.render(kwargs)
 
 #
 #   Functions to make tests easier
 #
 
 def test_request(path):
-    global _hub
     return _hub.request(path)
