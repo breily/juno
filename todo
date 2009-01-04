@@ -24,12 +24,3 @@
     model('item', ('name', 'string'))
     data('item').id(4).order('name')
     create('item', name='asdf')
-
-> make JunoRequest take care of different headers for the same thing:
-    i.e. JunoRequest.user_agent for HTTP_USER_AGENT and User-Agent
-
-> some sort of bug with request urls 
-    - '/test/:id/' keeps '0/' from '/test/0/'
-    - '/say/*:greet/to/*:name/' works with '/say/hi/to/brian/', but
-      reacts very strangely to '/say/hi/to/brian'
-

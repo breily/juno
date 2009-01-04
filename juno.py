@@ -110,19 +110,28 @@ class JunoRoute(object):
         return '<JunoRoute: %s %s - %s()>' %(self.method, self.old_url, self.func.__name__)
 
 class JunoRequest(object):
+    """Offers following members:
+        raw => the header dictionary used to construct the JunoRequest
+        location => uri being requested, without query string ('/' from '/?a=6')
+        full_location => uri with query string ('/?a=6' from '/?a=6')
+        user_agent => the user agent string of requester
+    """
     def __init__(self, request):
-        self.headers = request
+        # Make sure the request string ends with '/'
         if 'DOCUMENT_URI' not in request: request['DOCUMENT_URI'] = '/'
         elif request['DOCUMENT_URI'][-1] != '/': request['DOCUMENT_URI'] += '/'
+        # Set some instance variables
         self.raw = request
         self.raw['input'] = {}
         self.location = request['DOCUMENT_URI']
         if 'REQUEST_URI' in request:
             self.full_location = request['REQUEST_URI']
+        # Parse post and get strings    
         self.parse_query_string('QUERY_STRING')
         self.parse_query_string('POST_DATA')
-        if 'POST_DATA' in self.headers:
-            del self.headers['POST_DATA']
+        # Find the right user agent header
+        if 'SCGI' in request: self.user_agent = request['HTTP_USER_AGENT']
+        else: self.user_agent = request['User-Agent']
     
     def parse_query_string(self, header):
         """Adds elements of the query string to ['input'].  If the key
