@@ -19,7 +19,6 @@ class Juno(object):
                 'scgi_port':    6969,
                 'dev_port':     8000,
                 '404_template': '404.html',
-                '500_template': '500.html',
                 'name': 'JunoApp',
                 'media_url': '/media/*:file/',
                 'media_root': './media/',
