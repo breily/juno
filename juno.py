@@ -87,7 +87,8 @@ class JunoRoute(object):
             match_obj = splat_re.match(part)
             if match_obj is None: buffer += '/' + part
             else: buffer += '/(?P<' + match_obj.group('var') + '>.*)'
-        if buffer[-1] != ')': buffer += '/$'        
+        if buffer[-1] != ')': buffer += '/$'
+        else: buffer += '/'
         self.url = re.compile(buffer)
         self.func = func
         self.method = method.upper()
@@ -211,6 +212,7 @@ _hub = None
 def init(config=None):
     global _hub
     _hub = _hub if _hub else Juno(config)
+    return _hub
 
 def set_config(key, value):
     global _hub
@@ -297,3 +299,11 @@ def media_serve(web, file):
 def template(path):
     global _hub
     return _hub.config['template_env'].get_template(path)
+
+#
+#   Functions to make tests easier
+#
+
+def test_request(path):
+    global _hub
+    return _hub.request(path)
