@@ -221,11 +221,8 @@ def get_config(key):
     global _hub
     return _hub.config[key] if key in _hub.config else None
 
-class NoViewsAssigned(Exception): pass
-
-def run():
-    if _hub: _hub.run()
-    else: raise NoViewsAssigned('No urls attached to Juno')
+def run(mode=None):
+    _hub.run(mode)
 
 #
 #   Functions to add routes based on request methods
@@ -250,12 +247,18 @@ def delete(url=None): return route(url, 'delete')
 _response = None
 
 def append(body):
+    """Add text to response body. """
     global _response
     return _response.append(body)
 
 def header(key, value):
+    """Set a response header. """
     global _response
     return _response.header(key, value)
+
+def content_type(type):
+    """Set the content type header. """
+    header('Content-Type', type)
 
 #
 #   Convenience functions for 404s and redirects
@@ -264,12 +267,14 @@ def header(key, value):
 def redirect(url):
     global _response
     _response.config['status'] = 302
-    _response.config['headers'] = {'Location': url}
+    # clear the response headers and add the location header
+    _response.config['headers'] = { 'Location': url }
     return _response
 
 def notfound(error='Unspecified error', file=None):
+    """Appends the rendered 404 template to response body. """
     file = file if file else get_config('404_template')
-    return template(file).render(error=error)
+    return append(template(file).render(error=error))
 
 #
 #   Default media serving function

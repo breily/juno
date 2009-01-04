@@ -35,12 +35,6 @@ Say hello with post data (assumes a submitted form with field 'name'):
 ] def post_hello(web):
 ]     return 'Hello, %s' %web.input('name')
 
-Use headers:
-
-] @get('/ua/')
-] def user_agent(web):
-]     return 'Hello, %s' %web.headers['HTTP_USER_AGENT']
-
 Use implicit urls:
 
 ] @get()
@@ -65,7 +59,7 @@ Features
 Help
 ----
 
-To set up SCGI for Nginx, use something like (make sure you have mod_scgi):
+- To set up SCGI for Nginx, use something like (make sure you have mod_scgi):
     
     http {
         server {
@@ -75,4 +69,6 @@ To set up SCGI for Nginx, use something like (make sure you have mod_scgi):
         }
     }
 
+  Juno is set by default to run the development server when using run().  To
+  use SCGI, use run('scgi') instead.
     
