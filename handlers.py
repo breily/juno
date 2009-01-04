@@ -36,6 +36,7 @@ class HTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 def run_dev(addr, port, process_func):
     HTTPRequestHandler.process = process_func
     server = BaseHTTPServer.HTTPServer((addr, port), HTTPRequestHandler)
+    print 'running juno development server, <ctrl-c> to exit...'
     serve(server)
 
 class SCGIRequestHandler(SocketServer.BaseRequestHandler):

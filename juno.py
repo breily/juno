@@ -47,6 +47,7 @@ class Juno(object):
         """Called when a request is received, routes a url to its request. 
         Returns a string, currently set as a JunoResponse.render()."""
         req_obj = JunoRequest(kwargs)
+        if request[-1] != '/': request += '/'
         for route in self.routes:
             if not route.match(request, method): continue
             global _response
@@ -79,7 +80,7 @@ class JunoRoute(object):
         if url[0] != '/': url = '/' + url
         if url[-1] != '/': url += '/'
         self.old_url = url
-        # Transform '/hello/*:name/' forms into '^/hello/(?<name>.*)'
+        # Transform '/hello/*:name/' forms into '^/hello/(?<name>.*)/'
         splat_re = re.compile('^\*?:(?P<var>\w+)$')
         buffer = '^'
         for part in url.split('/'):
