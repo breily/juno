@@ -20,16 +20,16 @@ class Juno(object):
                 'dev_port':     8000,
                 '404_template': '404.html',
                 'name': 'JunoApp',
-                'media_url': '/media/*:file/',
-                'media_root': './media/',
-                'media_handler': media_serve,
+                'static_url': '/static/*:file/',
+                'static_root': './static/',
+                'static_handler': static_serve,
                 'template_dir': './templates/',
                 }
         if config is not None: self.config.update(config)
         self.config['template_env'] = jinja2.Environment(
             loader=jinja2.FileSystemLoader(self.config['template_dir']))
-        # set up the media handler    
-        self.route(self.config['media_url'], self.config['media_handler'], '*')
+        # set up the static handler
+        self.route(self.config['static_url'], self.config['static_handler'], '*')
 
     def run(self, mode=None):
         """Runs the Juno hub, in the set mode (default now is scgi). """
@@ -288,11 +288,11 @@ def notfound(error='Unspecified error', file=None):
     return append(template(file).render(error=error))
 
 #
-#   Default media serving function
+#   Default static file serving function
 #
 
-def media_serve(web, file):
-    file = get_config('media_root') + file
+def static_serve(web, file):
+    file = get_config('static_root') + file
     if not os.access(file, os.F_OK):
         return notfound(error='media file could not be located')
     if os.path.isdir(file):
