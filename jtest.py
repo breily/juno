@@ -1,3 +1,7 @@
+#
+#   Run 'python jtest.py' to test parts of Juno.
+#
+
 from juno import *
 
 @route('/test/:id/')
