@@ -36,6 +36,7 @@ class HTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 def run_dev(addr, port, process_func):
     HTTPRequestHandler.process = process_func
     server = BaseHTTPServer.HTTPServer((addr, port), HTTPRequestHandler)
+    print ''
     print 'running Juno development server, <C-c> to exit...'
     print 'connect to 127.0.0.1:%s to use your app...' %port
     serve(server)
@@ -72,6 +73,7 @@ class SCGIRequestHandler(SocketServer.BaseRequestHandler):
 def run_scgi(addr, port, process_func):
     SCGIRequestHandler.process = process_func
     server = SocketServer.ThreadingTCPServer((addr, port), SCGIRequestHandler)
+    print ''
     print 'running Juno SCGI server, <C-c> to exit...'
     print 'connect to 127.0.0.1:80 to use your app...'
     serve(server)
