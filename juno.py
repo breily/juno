@@ -1,7 +1,12 @@
+# Built in library imports
 import mimetypes
 import re
 import os
+# Template and DB library imports
 import jinja2
+from sqlalchemy import create_engine, Table, MetaData, Column, Integer, String
+from sqlalchemy.orm import sessionmaker, mapper
+# Juno library imports
 import handlers
 
 class Juno(object):
@@ -24,12 +29,19 @@ class Juno(object):
                 'static_handler': static_serve,
                 'template_dir':   './templates/',
                 '404_template':   '404.html',
+                'db_type':        'sqlite',
+                'db_location':    ':memory:',
                 }
         if config is not None: self.config.update(config)
         self.config['template_env'] = jinja2.Environment(
             loader=jinja2.FileSystemLoader(self.config['template_dir']))
         # set up the static handler
         self.route(self.config['static_url'], self.config['static_handler'], '*')
+        # set up the database
+        db_strings = {'sqlite': 'sqlite:///'}
+        db_string = db_strings[self.config['db_type']]
+        self.config['db_engine'] = create_engine(db_string + self.config['db_location'])
+        self.config['db_session'] = sessionmaker(bind=self.config['db_engine'])()
 
     def run(self, mode=None):
         """Runs the Juno hub, in the set mode (default now is scgi). """
@@ -319,3 +331,40 @@ def template(template_path, template_dict=None, **kwargs):
 
 def test_request(path):
     return _hub.request(path)
+
+#
+#   Data modeling functions
+#
+
+class JunoDataType(type):
+    def __new__(cls, name, bases, dct):
+        return type.__new__(cls, name, bases, dct)
+    def __init__(cls, name, bases, dct):
+        super(JunoDataType, cls).__init__(name, bases, dct)
+
+models = {}
+
+# model('item', name='string', desc='string')
+def model(model_name, **kwargs):
+    # somehow define an __init__ function and pass it in the dict
+    tmp = JunoDataType(model_name, (object,), {})
+    metadata = MetaData()
+    tmp_table = Table(model_name + 's', metadata,
+        Column('id', Integer, primary_key=True),
+        # Somehow map the kwargs to Columns
+    )
+    mapper(tmp, tmp_table)
+    global models
+    models[model_name] = tmp
+
+def find(model_name):
+# return the query object from sqlalchemy for now
+# though, how to deal with things like (User.name.like("jun%"))?
+#
+# also, perhaps create secondary find functions like find_MODEL,
+# where MODEL is 'item' or whatever
+    pass
+
+def create(model_name, **kwargs):
+# perhaps secondary functions, as with find
+    pass
