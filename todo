@@ -1,25 +1,5 @@
 > test post with other inputs (specifically files)
 > would reassigning any operators work? i like | for something
-
->>>> possible: make a global response object for each request, so no explicit return
-  is required
-  def view(request):
-    html("<html>some html code</html>")
-    -- or an implicit global response named J (implmenet __call__ for JunoResponse?)
-    def view(web):
-        J['Content-Type'] = '...'
-        J('writing some text here')
-        J(status=404)
-
-> when a user function gets a request object, allow writing to it to response
-    def index(web):
-        web.write('Hello world')
-        web.write('Content-Type: text/json', type='header')
-    -- which causes: 
-        def web.write(self, text, type='body')
-            # if no JunoResponse, make one
-            j.append(text)
-
 > database api:
     model('item', ('name', 'string'))
     data('item').id(4).order('name')

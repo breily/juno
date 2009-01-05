@@ -14,16 +14,16 @@ class Juno(object):
         self.routes = []
         global media_serve
         self.config = {
-                'log':      True,
-                'mode':     'dev',
-                'scgi_port':    6969,
-                'dev_port':     8000,
-                '404_template': '404.html',
-                'name': 'JunoApp',
-                'static_url': '/static/*:file/',
-                'static_root': './static/',
+                'name':           'JunoApp',
+                'log':            True,
+                'mode':           'dev',
+                'scgi_port':      6969,
+                'dev_port':       8000,
+                'static_url':     '/static/*:file/',
+                'static_root':    './static/',
                 'static_handler': static_serve,
-                'template_dir': './templates/',
+                'template_dir':   './templates/',
+                '404_template':   '404.html',
                 }
         if config is not None: self.config.update(config)
         self.config['template_env'] = jinja2.Environment(
@@ -307,9 +307,10 @@ def static_serve(web, file):
 #   Templating
 #
 
-def template(template_path, **kwargs):
+def template(template_path, template_dict=None, **kwargs):
     t = _hub.config['template_env'].get_template(template_path)
-    if not kwargs: return t
+    if not kwargs and not template_dict: return t
+    if template_dict: return t.render(template_dict)
     return t.render(kwargs)
 
 #
