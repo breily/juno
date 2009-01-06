@@ -1,0 +1,20 @@
+<html>
+    <body>
+    {% if items %}
+        Items:
+        <ul>
+        {% for item in items %}
+            <li>{{ item.title }}: {{ item.desc }}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        No items yet
+    {% endif %}
+        <br />
+        <form action='/process/' method='post'>
+            title:       <input type='text' name='title' /><br />
+            description: <input type='text' name='desc' size='50' /><br />
+            <input type='submit' value='add item' />
+        </form>
+    </body>
+</html>
