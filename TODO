@@ -9,9 +9,6 @@
 ) Unescape the GET/POST data to remove url encodings ('+' for space, etc)
   -- Check url above (cgi.parse_qs(), cgi.parse_multipart())
 
-) Allow a dictionary of functions to be passed to model
-  -- model(... {'__repr__': lambda self: '<MyCustomString>'})
-
 ) Add some more options to Column creation (ForeignKey, etc.)
 
 ) Any more convenience functions like content_type() needed?
@@ -25,3 +22,5 @@
 ) Add something to implicitly return a file:
     file(filename, content_type='auto') # or yield_file(...)
   -- have that do existence checking, etc.  Use it for media serving too.  
+
+) Work on some sort of documentation
