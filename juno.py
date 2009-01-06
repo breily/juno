@@ -12,14 +12,11 @@ import handlers
 class Juno(object):
     def __init__(self, config=None):
         """Takes an optional configuration dictionary. """
-        global _hub
         if _hub is not None:
             print 'warning: there is already a Juno object created;'
             print '         you might get some wierd behavior.'
         self.routes = []
-        global media_serve
         self.config = {
-                'name':           'JunoApp',
                 'log':            True,
                 'mode':           'dev',
                 'scgi_port':      6969,
@@ -79,7 +76,7 @@ class Juno(object):
             for u in url: self.routes.append(JunoRoute(u, func, method)) 
 
     def __repr__(self):
-        return '<Juno: %s>' %self.config['name']
+        return '<Juno>'
 
 class JunoRoute(object):
     """Uses a simplified regex to grab url parts:
@@ -237,15 +234,14 @@ def init(config=None):
     _hub = _hub if _hub else Juno(config)
     return _hub
 
-def set_config(key, value):
-    global _hub
-    _hub.config[key] = value
-
-def get_config(key):
-    global _hub
-    return _hub.config[key] if key in _hub.config else None
+def config(key, value=None):
+    if value is None:
+        if type(key) == dict: _hub.config.update(key)
+        else: return _hub.config[key] if key in _hub.config else None
+    else: _hub.config[key] = value    
 
 def run(mode=None):
+    if _hub is None: init()
     _hub.run(mode)
 
 #
@@ -253,7 +249,6 @@ def run(mode=None):
 #
 
 def route(url=None, method='*'):
-    global _hub
     if _hub is None: init()
     def wrap(f): _hub.route(url, f, method)
     return wrap
@@ -343,28 +338,45 @@ class JunoDataType(type):
         super(JunoDataType, cls).__init__(name, bases, dct)
 
 models = {}
+column_mapping = {'string': String, 'integer': Integer, 'int': Integer}
 
-# model('item', name='string', desc='string')
 def model(model_name, **kwargs):
-    # somehow define an __init__ function and pass it in the dict
-    tmp = JunoDataType(model_name, (object,), {})
+    # Parse kwargs to get column definitions
+    cols = [ Column('id', Integer, primary_key=True), ]
+    for k, v in kwargs.items():
+        v = v.lower()
+        if v not in column_mapping:
+            raise NameError("'%s' is not an allowed database column" %v)
+        cols.append(Column(k, column_mapping[v]))
+    # functions for the class
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items(): self.__dict__[k] = v
+    def add(self): session().add(self)
+    def commit(self):
+        session().add(self)
+        session().commit()
+    def __repr__(self): return '<%s: id = %s>' %(self.__name__, self.id)
+    # Create the class    
+    tmp = JunoDataType(model_name, (object,), {'__name__': model_name, 
+        '__init__': __init__, 'add': add, 'commit': commit, '__repr__': __repr__})
+    # Create the table
     metadata = MetaData()
-    tmp_table = Table(model_name + 's', metadata,
-        Column('id', Integer, primary_key=True),
-        # Somehow map the kwargs to Columns
-    )
+    tmp_table = Table(model_name + 's', metadata, *cols)
+    metadata.create_all(config('db_engine'))
+    # Map the table to the created class
     mapper(tmp, tmp_table)
+    # Add class and functions to global namespace
     global models
     models[model_name] = tmp
+    globals()['find_' + model_name.lower()] = lambda: find(tmp)
+    globals()[model_name] = tmp
+    return tmp
 
-def find(model_name):
-# return the query object from sqlalchemy for now
-# though, how to deal with things like (User.name.like("jun%"))?
-#
-# also, perhaps create secondary find functions like find_MODEL,
-# where MODEL is 'item' or whatever
-    pass
+def find(model_cls):
+    if type(model_cls) == str:
+        try: model_cls = models[model_cls]
+        except: raise NameError("No such model exists ('%s')" %model_cls)
+    return session().query(model_cls)
 
-def create(model_name, **kwargs):
-# perhaps secondary functions, as with find
-    pass
+def session():
+    return config('db_session')
