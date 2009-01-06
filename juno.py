@@ -341,6 +341,7 @@ models = {}
 column_mapping = {'string': String, 'integer': Integer, 'int': Integer}
 
 def model(model_name, **kwargs):
+    if not _hub: init()
     # Parse kwargs to get column definitions
     cols = [ Column('id', Integer, primary_key=True), ]
     for k, v in kwargs.items():

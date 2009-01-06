@@ -24,6 +24,7 @@ class HTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
              'REQUEST_METHOD': self.command,
              'QUERY_STRING': parsed.query, 
              'DOCUMENT_URI': parsed.path if parsed.path[-1] == '/' else parsed.path + '/',
+             'POST_DATA': self.rfile.read(),
               }
         for line in data:
             if not line: continue
