@@ -8,3 +8,6 @@
 
 ) Unescape the GET/POST data to remove url encodings ('+' for space, etc)
   -- Check url above (cgi.parse_qs(), cgi.parse_multipart())
+
+) Allow a dictionary of functions to be passed to model
+  -- model(... {'__repr__': lambda self: '<MyCustomString>'})
