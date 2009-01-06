@@ -35,9 +35,8 @@ class Juno(object):
         # set up the static handler
         self.route(self.config['static_url'], self.config['static_handler'], '*')
         # set up the database
-        db_strings = {'sqlite': 'sqlite:///'}
-        db_string = db_strings[self.config['db_type']]
-        self.config['db_engine'] = create_engine(db_string + self.config['db_location'])
+        self.config['db_engine'] = create_engine(self.config['db_type'] + 
+            '://' + self.config['db_location'])
         self.config['db_session'] = sessionmaker(bind=self.config['db_engine'])()
 
     def run(self, mode=None):
