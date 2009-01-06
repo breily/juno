@@ -345,10 +345,12 @@ def model(model_name, **kwargs):
     # Parse kwargs to get column definitions
     cols = [ Column('id', Integer, primary_key=True), ]
     for k, v in kwargs.items():
-        v = v.lower()
-        if v not in column_mapping:
-            raise NameError("'%s' is not an allowed database column" %v)
-        cols.append(Column(k, column_mapping[v]))
+        if type(v) == str:
+            v = v.lower()
+            if v not in column_mapping:
+                raise NameError("'%s' is not an allowed database column" %v)
+            v = column_mapping[v]
+        cols.append(Column(k, v))
     # functions for the class
     def __init__(self, **kwargs):
         for k, v in kwargs.items(): self.__dict__[k] = v

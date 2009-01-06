@@ -1,0 +1,9 @@
+) Make the HTTPRequestHandler just use the self.headers dict instead of
+  casting it to a string and splitting it (why did I do that to begin with?)
+  -- Ah I remember why, its an instance of MessageClass which I can't find
+     any docs for
+
+) Use the cgi module to parse form data since self.rfile.read() just seems
+  to hang
+
+) Investigate why dev server takes so long to start up  

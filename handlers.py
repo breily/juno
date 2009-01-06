@@ -1,6 +1,7 @@
 import SocketServer
 import BaseHTTPServer
 import urlparse
+import cgi
 
 def serve(server):
     try:
@@ -17,19 +18,30 @@ class HTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_DELETE(self): self.do_request()
     
     def do_request(self):
-        data = str(self.headers).split('\r\n')
         parsed = urlparse.urlparse(self.path)
         data_dict = {
              'REQUEST_URI': self.path, 
              'REQUEST_METHOD': self.command,
              'QUERY_STRING': parsed.query, 
              'DOCUMENT_URI': parsed.path if parsed.path[-1] == '/' else parsed.path + '/',
-             'POST_DATA': self.rfile.read(),
               }
+        # TODO: Fix this, see TODO file      
+        data = str(self.headers).split('\r\n')
         for line in data:
             if not line: continue
             (x, y) = [a.strip() for a in line.split(':', 1)]
+            print x, y
             data_dict[x] = y
+        if self.command == 'POST':    
+            """
+            form = cgi.FieldStorage(
+                fp = self.rfile, headers = data_dict,
+                environ = {'REQUEST_METHOD': 'POST',
+                           'CONTENT_TYPE': data_dict['Content-Type'],
+                })
+            print form.items()
+            """
+            print self.rfile.readline()
         self.wfile.write(self.process(parsed.path, self.command, **data_dict))
 
     def process(self, uri, method='*', **kwargs): return ''
