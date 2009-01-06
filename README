@@ -59,6 +59,20 @@ Or hide:
 ] def hidden(web):
 ]     notfound(error="you can't see me")
 
+Database
+--------
+
+] from juno import *
+]
+] Person = model('Person', name='string')
+] p = Person(name='brian')
+] p.commit()
+] p.name                # => u'brian'
+] p.id                  # => 1
+]
+] find(Person)          # => SQLAlchemy query object
+] find(Person).all()    # => [ <Person: id = 1> ]
+
 Features
 --------
 
@@ -67,6 +81,7 @@ Features
 - Builtin ties to Jinja2 templates
 - Serve static files.
 - Currently only interfaces to server through SCGI, but includes a development server.
+- Database access through SQLAlchemy
 
 Help
 ----

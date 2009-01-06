@@ -1,8 +1,0 @@
-> test post with other inputs (specifically files)
-> would reassigning any operators work? i like | for something
-> database api:
-    model('item', ('name', 'string'))
-    data('item').id(4).order('name')
-    create('item', name='asdf')
-> figure out how to create an init function on the fly    
-    '__init__': lambda self, **kwargs: self.k = v for k, v in kwargs
