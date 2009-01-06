@@ -317,8 +317,8 @@ def static_serve(web, file):
 def template(template_path, template_dict=None, **kwargs):
     t = _hub.config['template_env'].get_template(template_path)
     if not kwargs and not template_dict: return t
-    if template_dict: return t.render(template_dict)
-    return t.render(kwargs)
+    if template_dict: return append(t.render(template_dict))
+    return append(t.render(kwargs))
 
 #
 #   Functions to make tests easier
