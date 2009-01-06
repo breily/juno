@@ -3,7 +3,6 @@
   -- Ah I remember why, its an instance of MessageClass which I can't find
      any docs for
 
-) Use the cgi module to parse form data since self.rfile.read() just seems
-  to hang
-
 ) Investigate why dev server takes so long to start up  
+
+) Unescape the GET/POST data to remove url encodings ('+' for space, etc)

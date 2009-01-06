@@ -30,18 +30,9 @@ class HTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         for line in data:
             if not line: continue
             (x, y) = [a.strip() for a in line.split(':', 1)]
-            print x, y
             data_dict[x] = y
         if self.command == 'POST':    
-            """
-            form = cgi.FieldStorage(
-                fp = self.rfile, headers = data_dict,
-                environ = {'REQUEST_METHOD': 'POST',
-                           'CONTENT_TYPE': data_dict['Content-Type'],
-                })
-            print form.items()
-            """
-            print self.rfile.readline()
+            data_dict['POST_DATA'] = self.rfile.read(int(data_dict['Content-Length']))
         self.wfile.write(self.process(parsed.path, self.command, **data_dict))
 
     def process(self, uri, method='*', **kwargs): return ''
@@ -52,6 +43,7 @@ def run_dev(addr, port, process_func):
     print ''
     print 'running Juno development server, <C-c> to exit...'
     print 'connect to 127.0.0.1:%s to use your app...' %port
+    print ''
     serve(server)
 
 class SCGIRequestHandler(SocketServer.BaseRequestHandler):
@@ -89,4 +81,5 @@ def run_scgi(addr, port, process_func):
     print ''
     print 'running Juno SCGI server, <C-c> to exit...'
     print 'connect to 127.0.0.1:80 to use your app...'
+    print ''
     serve(server)
