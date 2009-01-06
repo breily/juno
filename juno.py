@@ -27,16 +27,19 @@ class Juno(object):
                 'template_dir':   './templates/',
                 '404_template':   '404.html',
                 'db_type':        'sqlite',
-                'db_location':    ':memory:',
+                'db_location':    '',
                 }
         if config is not None: self.config.update(config)
         self.config['template_env'] = jinja2.Environment(
             loader=jinja2.FileSystemLoader(self.config['template_dir']))
         # set up the static handler
         self.route(self.config['static_url'], self.config['static_handler'], '*')
-        # set up the database
-        self.config['db_engine'] = create_engine(self.config['db_type'] + 
-            '://' + self.config['db_location'])
+        # set up the database (first part ensures correct slash number for sqlite)
+        if self.config['db_type'] == 'sqlite':
+            if self.config['db_location'] not in ('', ':memory:'):
+                self.config['db_location'] = '/' + self.config['db_location']
+        eng_name = self.config['db_type'] + '://' + self.config['db_location']
+        self.config['db_engine'] = create_engine(eng_name)
         self.config['db_session'] = sessionmaker(bind=self.config['db_engine'])()
 
     def run(self, mode=None):
@@ -289,6 +292,12 @@ def redirect(url):
     _response.config['headers'] = { 'Location': url }
     return _response
 
+def assign(from_, to):
+    if type(from_) not in (list, tuple): from_ = [from_]
+    for url in from_:
+        @route(url)
+        def temp(web): redirect(to)
+
 def notfound(error='Unspecified error', file=None):
     """Appends the rendered 404 template to response body. """
     file = file if file else get_config('404_template')
@@ -323,21 +332,23 @@ def template(template_path, template_dict=None, **kwargs):
 #   Functions to make tests easier
 #
 
-def test_request(path):
-    return _hub.request(path)
+def test_request(path): return _hub.request(path)
 
 #
 #   Data modeling functions
 #
 
-class JunoDataType(type):
+class JunoClassConstructor(type):
     def __new__(cls, name, bases, dct):
         return type.__new__(cls, name, bases, dct)
     def __init__(cls, name, bases, dct):
-        super(JunoDataType, cls).__init__(name, bases, dct)
+        super(JunoClassConstructor, cls).__init__(name, bases, dct)
 
+# Map the class name to the class
 models = {}
-column_mapping = {'string': String, 'integer': Integer, 'int': Integer}
+# Map SQLAlchemy's types to string versions of them for convenience
+column_mapping = {'string': String, 'str': String,
+                  'integer': Integer, 'int': Integer, }
 
 def model(model_name, **kwargs):
     if not _hub: init()
@@ -346,11 +357,10 @@ def model(model_name, **kwargs):
     for k, v in kwargs.items():
         if type(v) == str:
             v = v.lower()
-            if v not in column_mapping:
-                raise NameError("'%s' is not an allowed database column" %v)
-            v = column_mapping[v]
+            if v in column_mapping: v = column_mapping[v]
+            else: raise NameError("'%s' is not an allowed database column" %v)
         cols.append(Column(k, v))
-    # functions for the class
+    # Functions for the class
     def __init__(self, **kwargs):
         for k, v in kwargs.items(): self.__dict__[k] = v
     def add(self): session().add(self)
@@ -359,7 +369,7 @@ def model(model_name, **kwargs):
         session().commit()
     def __repr__(self): return '<%s: id = %s>' %(self.__name__, self.id)
     # Create the class    
-    tmp = JunoDataType(model_name, (object,), {'__name__': model_name, 
+    tmp = JunoClassConstructor(model_name, (object,), {'__name__': model_name, 
         '__init__': __init__, 'add': add, 'commit': commit, '__repr__': __repr__})
     # Create the table
     metadata = MetaData()
@@ -380,5 +390,5 @@ def find(model_cls):
         except: raise NameError("No such model exists ('%s')" %model_cls)
     return session().query(model_cls)
 
-def session():
-    return config('db_session')
+session = lambda: config('db_session')
+

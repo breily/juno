@@ -11,3 +11,17 @@
 
 ) Allow a dictionary of functions to be passed to model
   -- model(... {'__repr__': lambda self: '<MyCustomString>'})
+
+) Add some more options to Column creation (ForeignKey, etc.)
+
+) Any more convenience functions like content_type() needed?
+
+) For url parameters:
+  -- add # and @?
+  -- allow unnamed parameters (give default name, maybe 'star' or 'splay')
+  -- parameters with the same name become a list, i.e.:
+     /a/*:foo/b/*:foo/ => /a/a/b/b/, foo => ["a", "b"]
+
+) Add something to implicitly return a file:
+    file(filename, content_type='auto') # or yield_file(...)
+  -- have that do existence checking, etc.  Use it for media serving too.  
