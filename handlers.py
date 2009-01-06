@@ -26,6 +26,7 @@ class HTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
              'DOCUMENT_URI': parsed.path if parsed.path[-1] == '/' else parsed.path + '/',
               }
         # TODO: Fix this, see TODO file      
+        # perhaps: self.headers.getheader('content-type')
         data = str(self.headers).split('\r\n')
         for line in data:
             if not line: continue

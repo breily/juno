@@ -2,7 +2,9 @@
   casting it to a string and splitting it (why did I do that to begin with?)
   -- Ah I remember why, its an instance of MessageClass which I can't find
      any docs for
+  -- Check http://code.activestate.com/recipes/392879/   
 
 ) Investigate why dev server takes so long to start up  
 
 ) Unescape the GET/POST data to remove url encodings ('+' for space, etc)
+  -- Check url above (cgi.parse_qs(), cgi.parse_multipart())
