@@ -359,14 +359,6 @@ session = lambda: config('db_session')
 
 def model(model_name, **kwargs):
     if not _hub: init()
-    # Parse kwargs to get column definitions
-    cols = [ Column('id', Integer, primary_key=True), ]
-    for k, v in kwargs.items():
-        if type(v) == str:
-            v = v.lower()
-            if v in column_mapping: v = column_mapping[v]
-            else: raise NameError("'%s' is not an allowed database column" %v)
-        cols.append(Column(k, v))
     # Functions for the class
     def __init__(self, **kwargs):
         for k, v in kwargs.items(): self.__dict__[k] = v
@@ -375,9 +367,21 @@ def model(model_name, **kwargs):
         session().add(self)
         session().commit()
     def __repr__(self): return '<%s: id = %s>' %(self.__name__, self.id)
+    cls_dict = {'__init__': __init__, 'add': add, 'commit': commit,
+                '__name__': model_name, '__repr__': __repr__ }
+    # Parse kwargs to get column definitions
+    cols = [ Column('id', Integer, primary_key=True), ]
+    for k, v in kwargs.items():
+        if callable(v):
+            cls_dict[k] = v
+            continue
+        if type(v) == str:
+            v = v.lower()
+            if v in column_mapping: v = column_mapping[v]
+            else: raise NameError("'%s' is not an allowed database column" %v)
+        cols.append(Column(k, v))
     # Create the class    
-    tmp = JunoClassConstructor(model_name, (object,), {'__name__': model_name, 
-        '__init__': __init__, 'add': add, 'commit': commit, '__repr__': __repr__})
+    tmp = JunoClassConstructor(model_name, (object,), cls_dict)
     # Create the table
     metadata = MetaData()
     tmp_table = Table(model_name + 's', metadata, *cols)

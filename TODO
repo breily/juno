@@ -18,7 +18,7 @@
 
 ) For url parameters:
   -- add # and @?
-  -- allow unnamed parameters (give default name, maybe 'star' or 'splay')
+  -- allow unnamed parameters (give default name, maybe 'star' or 'splat')
   -- parameters with the same name become a list, i.e.:
      /a/*:foo/b/*:foo/ => /a/a/b/b/, foo => ["a", "b"]
 
