@@ -73,6 +73,14 @@ Database
 ] find(Person)          # => SQLAlchemy query object
 ] find(Person).all()    # => [ <Person: id = 1> ]
 
+Specify a database (default is in memory sqlite):
+
+] init( {'db_type': 'mysql', 'db_location': 'localhost/foo'} )
+] Person = model(...
+
+See http://www.sqlalchemy.org/docs/05/dbengine.html#create-engine-url-arguments
+for more information.  'db_location' is anything after the 'driver://' part.
+
 Features
 --------
 
@@ -91,7 +99,7 @@ Help
     http {
         server {
             location / {
-                scgi_pass   127.0.0.1:6969;
+                scgi_pass   127.0.0.1:8080;
             }
         }
     }

@@ -19,7 +19,7 @@ class Juno(object):
         self.config = {
                 'log':            True,
                 'mode':           'dev',
-                'scgi_port':      6969,
+                'scgi_port':      8080,
                 'dev_port':       8000,
                 'static_url':     '/static/*:file/',
                 'static_root':    './static/',
@@ -57,12 +57,15 @@ class Juno(object):
     def request(self, request, method='*', **kwargs):
         """Called when a request is received, routes a url to its request. 
         Returns a string, currently set as a JunoResponse.render()."""
+        if self.log: print '%s request for %s...' %(method, request)
         req_obj = JunoRequest(kwargs)
+        global _response
+        _response = JunoResponse()
         if request[-1] != '/': request += '/'
         for route in self.routes:
             if not route.match(request, method): continue
-            global _response
-            _response = JunoResponse()
+            if self.log: print '%s matches, calling %s()...' %(
+                route.old_url, route.func.__name__)
             response = route.dispatch(req_obj)
             if response is None: response = _response
             if not isinstance(response, JunoResponse):
@@ -77,8 +80,10 @@ class Juno(object):
         else:
             for u in url: self.routes.append(JunoRoute(u, func, method)) 
 
-    def __repr__(self):
-        return '<Juno>'
+    def __getattr__(self, attr): 
+        return self.config[attr] if attr in self.config else None
+
+    def __repr__(self): return '<Juno>'
 
 class JunoRoute(object):
     """Uses a simplified regex to grab url parts:
@@ -300,7 +305,7 @@ def assign(from_, to):
 
 def notfound(error='Unspecified error', file=None):
     """Appends the rendered 404 template to response body. """
-    file = file if file else get_config('404_template')
+    file = file if file else config('404_template')
     return append(template(file).render(error=error))
 
 #
@@ -308,7 +313,7 @@ def notfound(error='Unspecified error', file=None):
 #
 
 def static_serve(web, file):
-    file = get_config('static_root') + file
+    file = config('static_root') + file
     if not os.access(file, os.F_OK):
         return notfound(error='media file could not be located')
     if os.path.isdir(file):
@@ -350,6 +355,8 @@ models = {}
 column_mapping = {'string': String, 'str': String,
                   'integer': Integer, 'int': Integer, }
 
+session = lambda: config('db_session')
+
 def model(model_name, **kwargs):
     if not _hub: init()
     # Parse kwargs to get column definitions
@@ -389,6 +396,4 @@ def find(model_cls):
         try: model_cls = models[model_cls]
         except: raise NameError("No such model exists ('%s')" %model_cls)
     return session().query(model_cls)
-
-session = lambda: config('db_session')
 
