@@ -309,20 +309,23 @@ def notfound(error='Unspecified error', file=None):
     return append(template(file).render(error=error))
 
 #
-#   Default static file serving function
+#   file serving (default server first)
 #
 
 def static_serve(web, file):
     file = config('static_root') + file
-    if not os.access(file, os.F_OK):
-        return notfound(error='media file could not be located')
-    if os.path.isdir(file):
-        return notfound(error='that location is a directory')
-    type = mimetypes.guess_type(file)[0]
-    if type is not None: header('Content-Type', type)
-    else: header('Content-Type', 'text/plain')
-    return append(open(file, 'r').read())
+    if not yield_file(file): notfound("that file could not be found/served")
 
+def yield_file(filename, type=None):
+    if not os.access(filename, os.F_OK): return False
+    if os.path.isdir(filename): return False
+    if type is None:
+        guess = mimetypes.guess_type(filename)[0]
+        if guess is None: content_type('text/plain')
+        else: content_type(guess)
+    else: content_type(type)
+    append(open(filename, 'r').read())
+    return True
 #
 #   Templating
 #

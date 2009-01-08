@@ -19,8 +19,8 @@
   -- parameters with the same name become a list, i.e.:
      /a/*:foo/b/*:foo/ => /a/a/b/b/, foo => ["a", "b"]
 
-) Add something to implicitly return a file:
-    file(filename, content_type='auto') # or yield_file(...)
-  -- have that do existence checking, etc.  Use it for media serving too.  
-
 ) Work on some sort of documentation
+
+) Add shortcut to render a template from outside a view:
+    autorender('/', 'index.html') # or...
+    autotemplate(['/', '/index/'], 'index.html')
