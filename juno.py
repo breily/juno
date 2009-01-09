@@ -63,7 +63,7 @@ class Juno(object):
         if request[-1] != '/': request += '/'
         for route in self.routes:
             if not route.match(request, method): continue
-            if self.log: print '%s matches, calling %s()...' %(
+            if self.log: print '%s matches, calling %s()...\n' %(
                 route.old_url, route.func.__name__)
             response = route.dispatch(req_obj)
             if response is None: response = _response
