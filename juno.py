@@ -27,7 +27,7 @@ class Juno(object):
                 'template_dir':   './templates/',
                 '404_template':   '404.html',
                 'db_type':        'sqlite',
-                'db_location':    '',
+                'db_location':    ':memory:',
                 }
         if config is not None: self.config.update(config)
         self.config['template_env'] = jinja2.Environment(
@@ -36,8 +36,7 @@ class Juno(object):
         self.route(self.config['static_url'], self.config['static_handler'], '*')
         # set up the database (first part ensures correct slash number for sqlite)
         if self.config['db_type'] == 'sqlite':
-            if self.config['db_location'] not in ('', ':memory:'):
-                self.config['db_location'] = '/' + self.config['db_location']
+            self.config['db_location'] = '/' + self.config['db_location']
         eng_name = self.config['db_type'] + '://' + self.config['db_location']
         self.config['db_engine'] = create_engine(eng_name)
         self.config['db_session'] = sessionmaker(bind=self.config['db_engine'])()
@@ -335,6 +334,12 @@ def template(template_path, template_dict=None, **kwargs):
     if not kwargs and not template_dict: return t
     if template_dict: return append(t.render(template_dict))
     return append(t.render(kwargs))
+
+def autotemplate(urls, template_path):
+    if type(urls) not in (list, tuple): urls = urls[urls]
+    for url in urls:
+        @route(url)
+        def temp(web): template(template_path)
 
 #
 #   Functions to make tests easier

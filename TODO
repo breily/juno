@@ -21,6 +21,4 @@
 
 ) Work on some sort of documentation
 
-) Add shortcut to render a template from outside a view:
-    autorender('/', 'index.html') # or...
-    autotemplate(['/', '/index/'], 'index.html')
+) Clean up the README - too many examples
