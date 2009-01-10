@@ -315,16 +315,18 @@ def static_serve(web, file):
     file = config('static_root') + file
     if not yield_file(file): notfound("that file could not be found/served")
 
+# Response codes: 1 => Filename doesn't exist, 2 => Filename is directory
+#                 7 => Success
 def yield_file(filename, type=None):
-    if not os.access(filename, os.F_OK): return False
-    if os.path.isdir(filename): return False
+    if not os.access(filename, os.F_OK): return 1
+    if os.path.isdir(filename): return 2
     if type is None:
         guess = mimetypes.guess_type(filename)[0]
         if guess is None: content_type('text/plain')
         else: content_type(guess)
     else: content_type(type)
     append(open(filename, 'r').read())
-    return True
+    return 7
 #
 #   Templating
 #
