@@ -22,3 +22,7 @@
 ) Work on some sort of documentation
 
 ) Clean up the README - too many examples
+
+) Any chance of directory traversal with static file serving?  Initially
+  doesn't seem to work '/static/../setup.py' gets transformed to 
+  '/setup.py', but check it out
