@@ -19,7 +19,7 @@ class Juno(object):
         self.config = {
                 'log':            True,
                 'mode':           'dev',
-                'scgi_port':      8080,
+                'scgi_port':      8000,
                 'dev_port':       8000,
                 'static_url':     '/static/*:file/',
                 'static_root':    './static/',
