@@ -104,11 +104,14 @@ Help
     http {
         server {
             location / {
-                scgi_pass   127.0.0.1:8080;
+                scgi_pass   127.0.0.1:8000;
+                include     scgi_vars;
             }
         }
     }
 
   Juno is set by default to run the development server when using run().  To
   use SCGI, use run('scgi') instead.
-    
+  
+  Note for SCGI:  Due to some threading issues I'm trying to figure out with 
+  SQLite, the SCGI server is not multithreaded.

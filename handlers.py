@@ -50,6 +50,7 @@ def run_dev(addr, port, process_func):
 class SCGIRequestHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         data = self.request.recv(1024)
+        print data
         if data:
             request_dict = self.build_scgi_dict(data)
             uri = request_dict['DOCUMENT_URI']
@@ -78,7 +79,7 @@ class SCGIRequestHandler(SocketServer.BaseRequestHandler):
 
 def run_scgi(addr, port, process_func):
     SCGIRequestHandler.process = process_func
-    server = SocketServer.ThreadingTCPServer((addr, port), SCGIRequestHandler)
+    server = SocketServer.TCPServer((addr, port), SCGIRequestHandler)
     print ''
     print 'running Juno SCGI server, <C-c> to exit...'
     print 'connect to 127.0.0.1:80 to use your app...'
