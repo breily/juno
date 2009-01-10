@@ -50,7 +50,6 @@ def run_dev(addr, port, process_func):
 class SCGIRequestHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         data = self.request.recv(1024)
-        print data
         if data:
             request_dict = self.build_scgi_dict(data)
             uri = request_dict['DOCUMENT_URI']
