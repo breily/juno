@@ -73,19 +73,6 @@ Database
 ] find(Person)          # => SQLAlchemy query object
 ] find(Person).all()    # => [ <Person: id = 1> ]
 
-Define functions for your model:
-
-] Person = model('Person', name='string', 
-]    __repr__=lambda self: '<Person: %s>' %self.name)
-
-Specify a database (default is in-memory sqlite):
-
-] init( {'db_type': 'mysql', 'db_location': 'localhost/foo'} )
-] Person = model(...
-
-See http://www.sqlalchemy.org/docs/05/dbengine.html#create-engine-url-arguments
-for more information.  'db_location' is anything after the 'driver://' part.
-
 Features
 --------
 
