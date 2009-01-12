@@ -1,8 +1,10 @@
-Juno
-====
 
-- Juno is a simple web framework to allow rapid prototyping of Python
-  applications
+  ~  Juno  ~  
+--------------
+
+* Juno is a web framework that was designed to make development as fast
+  as possible
+
 
 Say 'Hello, World' in Juno
 --------------------------
@@ -23,41 +25,12 @@ Add some url handling:
 ] def hello(web, name):
 ]     return 'Hello, %s' %name
 
-Say hello with a query string ('?name=x'):
-
-] @get('/query/')
-] def query(web):
-]     return 'Hello, %s' %web.input('name')
-
-Say hello with post data (assumes a submitted form with field 'name'):
-
-] @post('/post_query/')
-] def post_hello(web):
-]     return 'Hello, %s' %web.input('name')
-
-Use implicit urls:
-
-] @get()
-] def hi(web):  # Found at /hi/
-]     return 'Hi there!'
-
 Use a template (Juno uses Jinja2 templates):
 
 ] @get('/hi_template/:name/')
 ] def template_hi(web, name):
-]     return template('hello.html', name=name)
+]     template('hello.html', name=name)
 
-Don't want to say hi? Send them elsewhere:
-
-] @get('/go/away/')
-] def go_away(web):
-]     redirect('http://a.nice.person.com')
-
-Or hide:
-
-] @get('/hiding/')
-] def hidden(web):
-]     notfound(error="you can't see me")
 
 Database
 --------
@@ -73,6 +46,7 @@ Database
 ] find(Person)          # => SQLAlchemy query object
 ] find(Person).all()    # => [ <Person: id = 1> ]
 
+
 Features
 --------
 
@@ -80,8 +54,10 @@ Features
 - Use URL wildcards to pass named arguments to your functions.
 - Builtin ties to Jinja2 templates
 - Serve static files.
-- Currently only interfaces to server through SCGI, but includes a development server.
+- Currently only interfaces to server through SCGI, but includes a development 
+  server.
 - Database access through SQLAlchemy
+
 
 Help
 ----
