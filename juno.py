@@ -362,8 +362,16 @@ class JunoClassConstructor(type):
 # Map the class name to the class
 models = {}
 # Map SQLAlchemy's types to string versions of them for convenience
-column_mapping = {'string': String, 'str': String,
-                  'integer': Integer, 'int': Integer, }
+column_mapping = {     'string': String,       'str': String,
+                      'integer': Integer,      'int': Integer, 
+                      'unicode': Unicode,     'test': Text,
+                  'unicodetext': UnicodeText, 'date': Date,
+                      'numeric': Numeric,     'time': Time,
+                        'float': Float,   'datetime': Datetime,
+                     'interval': Interval,  'binary': Binary,
+                      'boolean': Boolean,     'bool': Boolean,
+                   'pickletype': PickleType,
+                 }
 
 session = lambda: config('db_session')
 
