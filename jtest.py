@@ -14,7 +14,7 @@ def test(web, id):
     # Test 2
     if id == 2: return redirect('/')
 
-# Test 2 and 3
+# Test 3 and 4
 @route('/say/*:greet/to/*:name/')
 def hello(web, greet, name):
     return greet + ', ' + name
@@ -37,12 +37,12 @@ if __name__ == '__main__':
     j.config['headers'] = { 'Location': '/' }
     assert response == j.render()
     
-    # Test 2
+    # Test 3
     print "juno: testing url wildcards..."
     response = test_request('/say/hi/to/brian/')
     assert response == JunoResponse(body='hi, brian').render()
 
-    # Test 3
+    # Test 4
     print "juno: testing url wildcards when they are the last parameter..."
     response = test_request('/say/hi/to/brian/reily/')
     assert response == JunoResponse(body='hi, brian/reily').render()
