@@ -1,3 +1,11 @@
+) Write docs
+
+) For url parameters:
+  -- add # and @?
+  -- allow unnamed parameters (give default name, maybe 'star' or 'splat')
+  -- parameters with the same name become a list, i.e.:
+     /a/*:foo/b/*:foo/ => /a/a/b/b/, foo => ["a", "b"]
+
 ) Make the HTTPRequestHandler just use the self.headers dict instead of
   casting it to a string and splitting it (why did I do that to begin with?)
   -- Ah I remember why, its an instance of MessageClass which I can't find
@@ -9,20 +17,12 @@
 ) Unescape the GET/POST data to remove url encodings ('+' for space, etc)
   -- Check url above (cgi.parse_qs(), cgi.parse_multipart())
 
-) Add some more options to Column creation (ForeignKey, etc.)
-
 ) Any more convenience functions like content_type() needed?
-
-) For url parameters:
-  -- add # and @?
-  -- allow unnamed parameters (give default name, maybe 'star' or 'splat')
-  -- parameters with the same name become a list, i.e.:
-     /a/*:foo/b/*:foo/ => /a/a/b/b/, foo => ["a", "b"]
-
-) Work on some sort of documentation
 
 ) Clean up the README - too many examples
 
 ) Any chance of directory traversal with static file serving?  Initially
   doesn't seem to work '/static/../setup.py' gets transformed to 
   '/setup.py', but check it out
+
+) Testing: specifically, new database types.
