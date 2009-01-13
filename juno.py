@@ -5,6 +5,8 @@ import os
 # Template and DB library imports
 import jinja2
 from sqlalchemy import create_engine, Table, MetaData, Column, Integer, String
+from sqlalchemy import Unicode, Text, UnicodeText, Date, Numeric, Time, Float
+from sqlalchemy import DateTime, Interval, Binary, Boolean, PickleType
 from sqlalchemy.orm import sessionmaker, mapper
 # Juno library imports
 import handlers
@@ -367,7 +369,7 @@ column_mapping = {     'string': String,       'str': String,
                       'unicode': Unicode,     'test': Text,
                   'unicodetext': UnicodeText, 'date': Date,
                       'numeric': Numeric,     'time': Time,
-                        'float': Float,   'datetime': Datetime,
+                        'float': Float,   'datetime': DateTime,
                      'interval': Interval,  'binary': Binary,
                       'boolean': Boolean,     'bool': Boolean,
                    'pickletype': PickleType,
