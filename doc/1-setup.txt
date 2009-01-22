@@ -1,0 +1,46 @@
+
+** Juno Setup
+=============
+
+    * Installation
+    --------------
+
+    You can install Juno by running `ruby setup.rb` as root.  This puts both
+    juno.py and handlers.py into /usr/local/lib/python2.5/site-packages/,
+    but if your system needs them someplace else just change the INSTALL_DIR
+    variable in setup.rb.
+
+    If you don't have Ruby, all the script does is copy the files, I just don't
+    enjoy writing Bash scripts.
+
+
+    * Server Configuration
+    ----------------------
+
+    Juno is set by default to run the builtin development server.  The only
+    current interface to a real server is through SCGI, which may require 
+    adding mod_scgi to your server (Nginx doesn't include this by default, but
+    I believe Lighttpd does).  
+
+    The configuration for Nginx should look something like this:
+        
+        http {
+            server {
+                location / {
+                    scgi_pass   127.0.0.1:8000;
+                    include     scgi_vars;
+                }
+            }
+        }
+
+    This would be in addition to whatever other options you were setting.
+
+    After you get Nginx started with that, do this to run your site and keep
+    it running after you logout:
+        
+        cd my/juno/site
+        nohup python my_juno_site.py &
+
+    Juno doesn't daemonize, so if you don't run it with nohup it will just 
+    exit when you exit.
+

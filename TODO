@@ -1,5 +1,7 @@
 ) Write docs
 
+) Left model api notes in mid sentence...
+
 ) For url parameters:
   -- add # and @?
   -- allow unnamed parameters (give default name, maybe 'star' or 'splat')

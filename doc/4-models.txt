@@ -86,3 +86,9 @@
     for details.
 
 
+    * For the Curious: How the Model Function Works
+    -----------------------------------------------
+
+    Juno's model() function is a little strange in that it is a normal function
+    that returns a class, exactly the same as if you had used the `class` keyword
+    to define it.  It does this by `referenced ibm.com article`.

@@ -1,0 +1,68 @@
+
+
+** Juno Basics
+==============
+
+    Start out by import Juno:
+        
+        from juno import *
+
+    
+    * Initialization
+    ----------------
+
+    Juno includes these default settings:
+        
+        'mode' => 'dev'         # 'dev' runs development server
+                                # 'scgi' runs SCGI server
+        'scgi_port' => 8000     # Where the SCGI server will listen
+        'dev_port' => 8000      # Where the development server will listen
+
+        'static_url' => '/static/*:file/'   # Anything caught by this route will
+                                            # be handled by 'static_handler' (see
+                                            # below).  If you change this but not
+                                            # the handler function, you must keep
+                                            # the *:file wildcard.
+        'static_root' => './static/'        # Where Juno looks for static files.
+        'static_handler' => juno.static_serve   # The default static handler -
+                                                # matches up file requests to the
+                                                # directory structure of your
+                                                # 'static_root'.  Uses mimetypes
+                                                # to determine content-type.
+    
+        'template_dir' => './templates/'    # Where Juno looks for template files.
+        '404_template' => '404.html'        # Filename of template used with the
+                                            # notfound() function.
+
+        'db_type' => 'sqlite'           # Default database engine is sqlite.
+        'db_location' => ':memory:'     # Default database location is in-memory.
+                                        # See 4-models.txt for more information.
+
+    If you don't need to change any of those, you don't need to call init().
+    If you do, call init with a dictionary of configuration options:
+        
+        init({'db_location': 'info.db', 'mode': 'scgi'})
+
+    
+    * Suggested Layout
+    ------------------
+
+    Obviously this is not enforced by Juno, but my usual layout for it is a single
+    file (apps tend to be tiny and thus manageable without spreading them out)
+    with roughly this ordering:
+        
+        * import
+        * initialize
+        * define models (see 4-models.txt)
+        * route shortcuts (assign, etc. - see 3-routes.txt)
+        * views
+        * run
+
+    And my directory layout would be:
+        
+        ./
+            juno_site.py
+            static/
+            templates/
+
+
