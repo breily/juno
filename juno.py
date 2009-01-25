@@ -366,7 +366,7 @@ models = {}
 # Map SQLAlchemy's types to string versions of them for convenience
 column_mapping = {     'string': String,       'str': String,
                       'integer': Integer,      'int': Integer, 
-                      'unicode': Unicode,     'test': Text,
+                      'unicode': Unicode,     'text': Text,
                   'unicodetext': UnicodeText, 'date': Date,
                       'numeric': Numeric,     'time': Time,
                         'float': Float,   'datetime': DateTime,

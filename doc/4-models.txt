@@ -91,4 +91,45 @@
 
     Juno's model() function is a little strange in that it is a normal function
     that returns a class, exactly the same as if you had used the `class` keyword
-    to define it.  It does this by `referenced ibm.com article`.
+    to define it.  This is possible because of Python's metaclasses - classes
+    whose instances are classes.  In juno.py, JunoClassConstructor subclasses
+    'type', a builtin Python metaclass.  This allows model() to return a class
+    instead of a normal instance.
+
+    So how does your class get the variables and methods you want?  model()
+    takes the parameters you passed in (name='string') and builds a dictionary
+    that maps variable names ('name') to the database column you specified
+    (Column('name', String)).  Then it adds any callables you gave it (like the
+    __repr__ example above), and then adds the included methods (default __repr__,
+    generic __init__, etc.).
+
+    This dictionary is passed along with your class name to the class constructor
+    mentioned above, and your class comes back out, and returned to you.
+
+
+    * Reference
+    -----------
+
+    juno.model(class_name, variable_name=column_type, ..., callables)
+
+        > Returns a class with the given variable names and methods.
+        > By default includes:
+            id       => Integer database column (primary key)
+            __init__ => Functions like a normal __init__, and just like a 
+                        normal class you don't call it directly.
+            __repr__ => Returns '<class_name: id = id>'
+            add      => Adds instance to current session.
+            commit   => Adds and commits instance.
+        > Column types are all lowercase versions of the standard SQLAlchemy
+          types ('string', 'integer', 'unicode', 'text', 'unicodetext', 'date',
+          'numeric', 'time', 'float', 'datetime', 'interval', 'binary', 'boolean',
+          'pickletype').  See SQLAlchemy reference for details.
+        > Callables are any lambdas or normal functions you want your class
+          to have.  Like normal methods, they must take self as their first
+          parameter (see __repr__ example).
+
+    juno.find(class or class_name)
+
+        > Returns a SQLAlchemy query object for that model.
+        > Takes a single parameter, which can either be a class or a string
+          name of one (Person or 'Person').
