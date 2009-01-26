@@ -25,56 +25,51 @@ Add some url handling:
 ] def hello(web, name):
 ]     return 'Hello, %s' %name
 
-Use a template (Juno uses Jinja2 templates):
+Use a template:
 
 ] @get('/hi_template/:name/')
 ] def template_hi(web, name):
 ]     template('hello.html', name=name)
 
 
-Database
---------
+Models
+------
 
-] from juno import *
-]
 ] Person = model('Person', name='string')
 ] p = Person(name='brian')
-] p.commit()
 ] p.name                # => u'brian'
 ] p.id                  # => 1
 ]
-] find(Person)          # => SQLAlchemy query object
 ] find(Person).all()    # => [ <Person: id = 1> ]
 
 
 Features
 --------
 
-- Assign functions based on URLs and request methods.
-- Use URL wildcards to pass named arguments to your functions.
-- Builtin ties to Jinja2 templates
-- Serve static files.
-- Currently only interfaces to server through SCGI, but includes a development 
-  server.
+- All normal web framework stuff (models, views, routes, templates)
+- Development server
+- Uses SCGI to connect to Nginx/Apache/etc.
+- Templating through Jinja2
 - Database access through SQLAlchemy
+
+
+Install
+-------
+
+# ruby setup.rb
+$ python
+>>> import juno
 
 
 Help
 ----
 
-- To set up SCGI for Nginx, use something like (make sure you have mod_scgi):
-    
-    http {
-        server {
-            location / {
-                scgi_pass   127.0.0.1:8000;
-                include     scgi_vars;
-            }
-        }
-    }
+- See the doc/ directory for the current documentation.
 
-  Juno is set by default to run the development server when using run().  To
-  use SCGI, use run('scgi') instead.
-  
-  Note for SCGI:  Due to some threading issues I'm trying to figure out with 
-  SQLite, the SCGI server is not multithreaded.
+
+Note
+----
+
+- Juno violates some usual principles of good design (don't use global
+  variables, don't do things implicitly, etc.) for the sake of fast
+  development and less boilerplate code.  You've been warned.

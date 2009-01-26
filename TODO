@@ -1,7 +1,5 @@
 ) Write docs
 
-) Left model api notes in mid sentence...
-
 ) For url parameters:
   -- add # and @?
   -- allow unnamed parameters (give default name, maybe 'star' or 'splat')
@@ -20,8 +18,6 @@
   -- Check url above (cgi.parse_qs(), cgi.parse_multipart())
 
 ) Any more convenience functions like content_type() needed?
-
-) Clean up the README - too many examples
 
 ) Any chance of directory traversal with static file serving?  Initially
   doesn't seem to work '/static/../setup.py' gets transformed to 
