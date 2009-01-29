@@ -2,6 +2,7 @@
 import mimetypes
 import re
 import os
+import sys
 # Template and DB library imports
 import jinja2
 from sqlalchemy import create_engine, Table, MetaData, Column, Integer, String
@@ -250,6 +251,9 @@ def config(key, value=None):
 
 def run(mode=None):
     if _hub is None: init()
+    if len(sys.argv) > 1:
+        if '-mode=' in sys.argv[1]: mode = sys.argv[1].split('=')[1]
+        elif '-mode' == sys.argv[1]: mode = sys.argv[2]
     _hub.run(mode)
 
 #

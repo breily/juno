@@ -48,15 +48,15 @@
     ------------------
 
     Obviously this is not enforced by Juno, but my usual layout for it is a single
-    file (apps tend to be tiny and thus manageable without spreading them out)
+    file (Juno apps tend to be tiny and thus manageable without spreading them out)
     with roughly this ordering:
         
-        * import
-        * initialize
+        * imports
+        * initialize settings
         * define models (see 4-models.txt)
         * route shortcuts (assign, etc. - see 3-routes.txt)
         * views
-        * run
+        * run()
 
     And my directory layout would be:
         
@@ -64,5 +64,21 @@
             juno_site.py
             static/
             templates/
+
+
+    * Running Your App
+    ------------------
+
+    Juno doesn't start either server until you call run().  By default run() will
+    load whichever server you have selected in 'mode': 'dev' runs the development
+    server and 'scgi' runs the SCGI server.
+
+    It can be inconvenient to remember to change this setting when moving back
+    and forth between a development repository and a production repository, so
+    run() allows you to set the mode on the command line.  So you can always
+    leave it in 'scgi' mode and just do this when developing:
+        
+        python juno_site.py -mode=dev 
+        # Also can be `python juno_site.py -mode dev`
 
 
