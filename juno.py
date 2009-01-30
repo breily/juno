@@ -73,7 +73,7 @@ class Juno(object):
             if not isinstance(response, JunoResponse):
                 response = JunoResponse(body=str(response))
             return response.render()
-        return notfound(error='No matching routes registered')
+        return notfound(error='No matching routes registered').render()
 
     def route(self, url, func, method):
         """Attaches a view to a url or list of urls, for a given function. """
