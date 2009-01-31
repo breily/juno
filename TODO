@@ -1,5 +1,3 @@
-) Write docs
-
 ) For url parameters:
   -- add # and @?
   -- allow unnamed parameters (give default name, maybe 'star' or 'splat')
@@ -16,11 +14,5 @@
 
 ) Unescape the GET/POST data to remove url encodings ('+' for space, etc)
   -- Check url above (cgi.parse_qs(), cgi.parse_multipart())
-
-) Any more convenience functions like content_type() needed?
-
-) Any chance of directory traversal with static file serving?  Initially
-  doesn't seem to work '/static/../setup.py' gets transformed to 
-  '/setup.py', but check it out
 
 ) Testing: specifically, new database types.
