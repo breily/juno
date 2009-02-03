@@ -1,5 +1,0 @@
-
-** Juno Template API
-====================
-
-    To be continued...

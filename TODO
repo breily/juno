@@ -17,3 +17,5 @@
 ) Use modified Items code to replace database code.
 
 ) Let autotemplate and assign use url arguments.
+
+) Add more status codes to Response objects.

@@ -1,0 +1,45 @@
+
+** Juno Template API
+====================
+
+    * Basics
+    --------
+
+        Juno looks for templates in './templates/' by default.  To change this,
+        change 'template_dir' when calling init().
+
+        Juno uses Jinja2 templates (http://jinja.pocoo.org/2/).
+
+
+    * Rendering
+    -----------
+
+        To render a template (adds the rendering to the current response object):
+
+            template('index.html')
+
+        To render a template with variables, you can use a dictionary or named
+        parameters:
+            
+            template('index.html', {'foo': 1, 'bar': 2})
+            template('index.html', foo=1, bar=2)
+
+
+        You can also set a template to automatically render for a given url:
+            
+            autotemplate('/', 'index.html')
+            autotemplate(['/index/', '/home/'], 'home.html')
+    
+        Currently, this does not accept any arguments in the url.
+
+
+    * Other Notes
+    -------------
+
+        To get an actual Jinja2 Template object without rendering it:
+            
+            get_template('index.html')
+
+        To get the current Jinja2 Environment:
+            
+            config('template_env')
