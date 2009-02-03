@@ -17,8 +17,9 @@ class Juno(object):
         """Takes an optional configuration dictionary. """
         if _hub is not None:
             print 'warning: there is already a Juno object created;'
-            print '         you might get some wierd behavior.'
+            print '         you might get some weird behavior.'
         self.routes = []
+        # Set options and merge in user-set options
         self.config = {
                 'log':            True,
                 'mode':           'dev',
@@ -33,9 +34,10 @@ class Juno(object):
                 'db_location':    ':memory:',
                 }
         if config is not None: self.config.update(config)
+        # Set up Jinja2
         self.config['template_env'] = jinja2.Environment(
             loader=jinja2.FileSystemLoader(self.config['template_dir']))
-        # set up the static handler
+        # set up the static file handler
         self.route(self.config['static_url'], self.config['static_handler'], '*')
         # set up the database (first part ensures correct slash number for sqlite)
         if self.config['db_type'] == 'sqlite':
@@ -61,24 +63,34 @@ class Juno(object):
         Returns a string, currently set as a JunoResponse.render()."""
         if self.log: print '%s request for %s...' %(method, request)
         req_obj = JunoRequest(kwargs)
+        # Set the global response object in case the view wants to use it
         global _response
         _response = JunoResponse()
+        # Add a slash if there isn't one - avoids frustrating matching bugs
         if request[-1] != '/': request += '/'
         for route in self.routes:
             if not route.match(request, method): continue
             if self.log: print '%s matches, calling %s()...\n' %(
                 route.old_url, route.func.__name__)
+            # Get the return from the view    
             response = route.dispatch(req_obj)
+            # If nothing returned, use the global object
             if response is None: response = _response
-            if not isinstance(response, JunoResponse):
-                response = JunoResponse(body=str(response))
-            return response.render()
+            # If we don't have a string, render the Response to one
+            if isinstance(response, JunoResponse):
+                return response.render()
+            return response
+        # No matches - 404
+        if self.log: print 'No match, returning 404...\n'
         return notfound(error='No matching routes registered').render()
 
     def route(self, url, func, method):
         """Attaches a view to a url or list of urls, for a given function. """
+        # An implicit route - the url is just the function name
         if url is None: url = '/' + func.__name__ + '/'
+        # If we just have one url, add it
         if type(url) == str: self.routes.append(JunoRoute(url, func, method))
+        # Otherwise add each url in the list
         else:
             for u in url: self.routes.append(JunoRoute(u, func, method)) 
 
@@ -90,22 +102,29 @@ class Juno(object):
 class JunoRoute(object):
     """Uses a simplified regex to grab url parts:
     i.e., '/hello/*:name/' compiles to '^/hello/(?P<name>\w+)/'
-    Considering adding '#' to match numbers and '@' to match letters
+    Considering adding '#' to match only numbers and '@' to match only letters
     i.e. '/id/#:id/' => '^/id/(?P<id>\d+)/'
     and  '/hi/@:name/' => '^/hi/(?P<name>[a-zA-Z])/'
     """
     def __init__(self, url, func, method):
+        # Make sure the url begins and ends in a '/'
         if url[0] != '/': url = '/' + url
         if url[-1] != '/': url += '/'
+        # Store the old one before we modify it (we use it for __repr__)
         self.old_url = url
-        # Transform '/hello/*:name/' forms into '^/hello/(?<name>.*)/'
+        # RE to match the splat format
         splat_re = re.compile('^\*?:(?P<var>\w+)$')
+        # Start building our modified url
         buffer = '^'
         for part in url.split('/'):
+            # Beginning and end portions are empty
             if not part: continue
             match_obj = splat_re.match(part)
+            # If it doesn't match, just add it without modification
             if match_obj is None: buffer += '/' + part
+            # Otherwise replace it with python's regex format
             else: buffer += '/(?P<' + match_obj.group('var') + '>.*)'
+        # If we don't end with a wildcard, add a end of line modifier    
         if buffer[-1] != ')': buffer += '/$'
         else: buffer += '/'
         self.url = re.compile(buffer)
@@ -117,15 +136,19 @@ class JunoRoute(object):
         """Matches a request uri to this url object. """
         match_obj = self.url.match(request)
         if match_obj is None: return False
+        # Make sure the request method matches
         if self.method != '*' and self.method != method: return False
+        # Store the parts that matched
         self.params.update(match_obj.groupdict())
         return True
 
     def dispatch(self, req):
+        """Calls the route's view with any named parameters."""
         return self.func(req, **self.params)
 
     def __repr__(self):
-        return '<JunoRoute: %s %s - %s()>' %(self.method, self.old_url, self.func.__name__)
+        return '<JunoRoute: %s %s - %s()>' %(self.method, self.old_url, 
+                                             self.func.__name__)
 
 class JunoRequest(object):
     """Offers following members:
@@ -135,15 +158,17 @@ class JunoRequest(object):
         user_agent => the user agent string of requester
     """
     def __init__(self, request):
-        # Make sure the request string ends with '/'
+        # Make sure we have a request uri, and it ends in '/'
         if 'DOCUMENT_URI' not in request: request['DOCUMENT_URI'] = '/'
         elif request['DOCUMENT_URI'][-1] != '/': request['DOCUMENT_URI'] += '/'
         # Set some instance variables
         self.raw = request
         self.raw['input'] = {}
         self.location = request['DOCUMENT_URI']
+        # If we get a REQUEST_URI, store it.  Otherwise copy DOCUMENT_URI.
         if 'REQUEST_URI' in request:
             self.full_location = request['REQUEST_URI']
+        else: self.full_location = self.location
         # Parse post and get strings    
         self.parse_query_string('QUERY_STRING')
         self.parse_query_string('POST_DATA')
@@ -155,29 +180,38 @@ class JunoRequest(object):
     def parse_query_string(self, header):
         """Adds elements of the query string to ['input'].  If the key
         already appears, make it point to a list of the values. """
+        # Make sure the requested header appears in the data we have.
         q = self.raw[header] if header in self.raw else None
         if not q: return
         q = q.split('&')
         for param in q:
             k, v = param.split('=', 1)
+            # If the key already appears,
             if k in self.raw['input'].keys():
+                # Either add it to the existing list
                 if isinstance(self.raw['input'][k], list):
                     self.raw['input'][k].append(v)
+                # Or take the value already there and make a list
                 else: self.raw['input'][k] = [self.raw['input'][k], v]
+            # If its a new key, just set it to the value
             else:    
                 self.raw['input'][k] = v
         
     def __getattr__(self, attr):
+        # Try returning values from self.raw
         if attr in self.keys():
             return self.raw[attr]
         return None
 
     def input(self, arg=None):
+        # No args: return the whole dictionary
         if arg is None: return self.raw['input']
+        # Otherwise try to return the value for that key
         if self.raw['input'].has_key(arg):
             return self.raw['input'][arg]
         return None
 
+    # Make JunoRequest as a dictionary for self.raw
     def __getitem__(self, key): return self.raw[key]
     def __setitem__(self, key, val): self.raw[key] = val
     def keys(self): return self.raw.keys()
@@ -192,6 +226,7 @@ class JunoRequest(object):
 class JunoResponse(object):
     status_codes = {200: 'OK', 302: 'Found', 404: 'Not Found'}
     def __init__(self, config=None, **kwargs):
+        # Set options and merge in user-set options
         self.config = {
             'body': '',
             'status': 200,
@@ -202,14 +237,17 @@ class JunoResponse(object):
         self.config.update(kwargs)
         self.config['headers']['Content-Length'] = len(self.config['body'])
     
+    # Add text and adjust content-length
     def append(self, text):
         self.config['body'] += str(text)
         self.config['headers']['Content-Length'] = len(self.config['body'])
         return self
-    
+ 
+    # Implement +=
     def __iadd__(self, text):
         return self.append(text)
 
+    # Write to a string
     def render(self):
         response = 'HTTP/1.1 %s %s\r\n' %(self.config['status'],
             self.status_codes[self.config['status']])
@@ -219,10 +257,12 @@ class JunoResponse(object):
         response += '%s' %self.config['body']
         return response
 
+    # Set a header value
     def header(self, header, value):
         self.config['headers'][header] = value
         return self
  
+    # Modify the headers dictionary when the response is treated like a dict
     def __setitem__(self, header, value): self.header(header, value)
     def __getitem__(self, header): return self.config['headers'][header]
 
@@ -239,17 +279,20 @@ class JunoResponse(object):
 _hub = None
 
 def init(config=None):
+    """Set up Juno with an optional configuration."""
     global _hub
     _hub = _hub if _hub else Juno(config)
     return _hub
 
 def config(key, value=None):
+    """Get or set configuration options."""
     if value is None:
         if type(key) == dict: _hub.config.update(key)
         else: return _hub.config[key] if key in _hub.config else None
     else: _hub.config[key] = value    
 
 def run(mode=None):
+    """Start Juno, with an optional mode argument."""
     if _hub is None: init()
     if len(sys.argv) > 1:
         if '-mode=' in sys.argv[1]: mode = sys.argv[1].split('=')[1]
@@ -257,7 +300,7 @@ def run(mode=None):
     _hub.run(mode)
 
 #
-#   Functions to add routes based on request methods
+#   Decorators to add routes based on request methods
 #
 
 def route(url=None, method='*'):
@@ -314,16 +357,18 @@ def notfound(error='Unspecified error', file=None):
     return append(template(file).render(error=error))
 
 #
-#   file serving (default server first)
+#   Serve static files.
 #
 
 def static_serve(web, file):
+    """The default static file serve function. Maps arguments to dir structure."""
     file = config('static_root') + file
     if not yield_file(file): notfound("that file could not be found/served")
 
-# Response codes: 1 => Filename doesn't exist, 2 => Filename is directory
-#                 7 => Success
 def yield_file(filename, type=None):
+    """Append the content of a file to the response. Guesses file type if not
+    included.  Returns 1 if requested file can' be accessed (often means doesn't 
+    exist).  Returns 2 if requested file is a directory.  Returns 7 on success. """
     if not os.access(filename, os.F_OK): return 1
     if os.path.isdir(filename): return 2
     if type is None:
@@ -333,27 +378,30 @@ def yield_file(filename, type=None):
     else: content_type(type)
     append(open(filename, 'r').read())
     return 7
+
 #
 #   Templating
 #
 
 def template(template_path, template_dict=None, **kwargs):
-    t = _hub.config['template_env'].get_template(template_path)
-    if not kwargs and not template_dict: return t
+    """Append a rendered template to response.  If template_dict is provided,
+    it is passed to the render function.  If not, kwargs is."""
+    t = get_template(template_path)
+    if not kwargs and not template_dict: return t.render()
     if template_dict: return append(t.render(template_dict))
     return append(t.render(kwargs))
 
+def get_template(template_path):
+    """Returns a Jinja2 template object."""
+    t = _hub.config['template_env'].get_template(template_path)
+
 def autotemplate(urls, template_path):
+    """Automatically renders a template for a given path.  Currently can't
+    use any arguments in the url."""
     if type(urls) not in (list, tuple): urls = urls[urls]
     for url in urls:
         @route(url)
         def temp(web): template(template_path)
-
-#
-#   Functions to make tests easier
-#
-
-def test_request(path): return _hub.request(path)
 
 #
 #   Data modeling functions

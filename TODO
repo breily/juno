@@ -1,5 +1,4 @@
 ) For url parameters:
-  -- add # and @?
   -- allow unnamed parameters (give default name, maybe 'star' or 'splat')
   -- parameters with the same name become a list, i.e.:
      /a/*:foo/b/*:foo/ => /a/a/b/b/, foo => ["a", "b"]
@@ -15,4 +14,6 @@
 ) Unescape the GET/POST data to remove url encodings ('+' for space, etc)
   -- Check url above (cgi.parse_qs(), cgi.parse_multipart())
 
-) Testing: specifically, new database types.
+) Use modified Items code to replace database code.
+
+) Let autotemplate and assign use url arguments.
