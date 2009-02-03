@@ -387,13 +387,13 @@ def template(template_path, template_dict=None, **kwargs):
     """Append a rendered template to response.  If template_dict is provided,
     it is passed to the render function.  If not, kwargs is."""
     t = get_template(template_path)
-    if not kwargs and not template_dict: return t.render()
+    if not kwargs and not template_dict: return append(t.render())
     if template_dict: return append(t.render(template_dict))
     return append(t.render(kwargs))
 
 def get_template(template_path):
     """Returns a Jinja2 template object."""
-    t = _hub.config['template_env'].get_template(template_path)
+    return _hub.config['template_env'].get_template(template_path)
 
 def autotemplate(urls, template_path):
     """Automatically renders a template for a given path.  Currently can't
