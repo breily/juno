@@ -63,6 +63,8 @@ class Juno(object):
         Returns a string, currently set as a JunoResponse.render()."""
         if self.log: print '%s request for %s...' %(method, request)
         req_obj = JunoRequest(kwargs)
+        debug_print(kwargs)
+        debug_print(req_obj.input())
         # Set the global response object in case the view wants to use it
         global _response
         _response = JunoResponse()
@@ -169,34 +171,25 @@ class JunoRequest(object):
         if 'REQUEST_URI' in request:
             self.full_location = request['REQUEST_URI']
         else: self.full_location = self.location
-        # Parse post and get strings    
-        self.parse_query_string('QUERY_STRING')
-        self.parse_query_string('POST_DATA')
+        # Build the input dict
+        self.combine_request_dicts()
         # Find the right user agent header
         if 'HTTP_USER_AGENT' in request: self.user_agent = request['HTTP_USER_AGENT']
         elif 'User-Agent' in request: self.user_agent = request['User-Agent']
         else: self.user_agent = '?'
     
-    def parse_query_string(self, header):
-        """Adds elements of the query string to ['input'].  If the key
-        already appears, make it point to a list of the values. """
-        # Make sure the requested header appears in the data we have.
-        q = self.raw[header] if header in self.raw else None
-        if not q: return
-        q = q.split('&')
-        for param in q:
-            k, v = param.split('=', 1)
-            # If the key already appears,
-            if k in self.raw['input'].keys():
-                # Either add it to the existing list
-                if isinstance(self.raw['input'][k], list):
-                    self.raw['input'][k].append(v)
-                # Or take the value already there and make a list
-                else: self.raw['input'][k] = [self.raw['input'][k], v]
-            # If its a new key, just set it to the value
-            else:    
-                self.raw['input'][k] = v
-        
+    def combine_request_dicts(self):
+        input_dict = self.raw['GET_DICT']
+        for k, v in self.raw['POST_DICT']:
+            # Combine repeated keys
+            if k in input_dict.keys(): input_dict[k].extend(v)
+            # Otherwise just add this key
+            else: input_dict[k] = v
+        # Reduce the dict - change one item lists ([a] to a)
+        for k, v in input_dict:
+            if len(v) == 1: input_dict[k] = v[0]
+        self.raw['input'] = input_dict
+
     def __getattr__(self, attr):
         # Try returning values from self.raw
         if attr in self.keys():
@@ -473,3 +466,6 @@ def find(model_cls):
         except: raise NameError("No such model exists ('%s')" %model_cls)
     return session().query(model_cls)
 
+
+def debug_print(data):
+    print data

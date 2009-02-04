@@ -24,7 +24,8 @@ class HTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
              'REQUEST_METHOD': self.command,
              'QUERY_STRING': parsed.query, 
              'DOCUMENT_URI': parsed.path if parsed.path[-1] == '/' else parsed.path + '/',
-              }
+             'GET_DICT': cgi.parse_qs(parsed.query, keep_blank_values=1),
+        }
         # TODO: Fix this, see TODO file      
         # perhaps: self.headers.getheader('content-type')
         data = str(self.headers).split('\r\n')
@@ -32,8 +33,13 @@ class HTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             if not line: continue
             (x, y) = [a.strip() for a in line.split(':', 1)]
             data_dict[x] = y
-        if self.command == 'POST':    
+        # find POST data
+        if self.command == 'POST':
             data_dict['POST_DATA'] = self.rfile.read(int(data_dict['Content-Length']))
+        else: data_dict['POST_DATA'] = ''
+        # Build POST dictionary
+        data_dict['POST_DICT'] = cgi.parse_qs(data_dict['POST_DATA'],
+                                    keep_blank_values=1)
         self.wfile.write(self.process(parsed.path, self.command, **data_dict))
 
     def process(self, uri, method='*', **kwargs): return ''
@@ -72,6 +78,11 @@ class SCGIRequestHandler(SocketServer.BaseRequestHandler):
             count += 2
         msg = data_list[count][1:]
         data_dict['POST_DATA'] = msg
+        # Build POST and GET dictionaries
+        data_dict['POST_DICT'] = cgi.parse_qs(data_dict['POST_DATA'],
+                                    keep_blank_values=1)
+        data_dict['GET_DICT'] = cgi.parse_qs(data_dict['QUERY_STRING'],
+                                    keep_blank_values=1)
         return data_dict
     
     def process(self, uri, method='*', **kwargs): return ''
