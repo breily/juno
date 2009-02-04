@@ -63,8 +63,6 @@ class Juno(object):
         Returns a string, currently set as a JunoResponse.render()."""
         if self.log: print '%s request for %s...' %(method, request)
         req_obj = JunoRequest(kwargs)
-        debug_print(kwargs)
-        debug_print(req_obj.input())
         # Set the global response object in case the view wants to use it
         global _response
         _response = JunoResponse()
@@ -465,7 +463,3 @@ def find(model_cls):
         try: model_cls = models[model_cls]
         except: raise NameError("No such model exists ('%s')" %model_cls)
     return session().query(model_cls)
-
-
-def debug_print(data):
-    print data
