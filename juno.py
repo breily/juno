@@ -180,13 +180,13 @@ class JunoRequest(object):
     
     def combine_request_dicts(self):
         input_dict = self.raw['GET_DICT']
-        for k, v in self.raw['POST_DICT']:
+        for k, v in self.raw['POST_DICT'].items():
             # Combine repeated keys
             if k in input_dict.keys(): input_dict[k].extend(v)
             # Otherwise just add this key
             else: input_dict[k] = v
         # Reduce the dict - change one item lists ([a] to a)
-        for k, v in input_dict:
+        for k, v in input_dict.items():
             if len(v) == 1: input_dict[k] = v[0]
         self.raw['input'] = input_dict
 
