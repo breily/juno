@@ -15,18 +15,26 @@
             web.full_location   # '/?a=4'
             web.user_agent      # ...user-agent string...
             web.raw             # A dictionary mapping header names to their values
-
-            web.input()         # Returns a dictionary of GET/POST data
-            web.input('a')      # Gets the value of the GET/POST key 'a' (i.e.
-                                # a form field name 'a' or something like '?a=1')
-                                # Returns none if the key doesn't exist
-                                # Duplicate key names will map to a list of
-                                # values - i.e. if two form fields have the same
-                                # name ('a') and have values 1 and 2, then
-                                # web.input('a') will return [1, 2]
-
             web['REQUEST_URI']  # The Request can be used like a dictionary, to
                                 # retrieve values from the raw dictionary.
+
+        Data received from GET/POST requests is stored in web.input().  This
+        would be query strings ('?a=4&b=5') and form data.  Currently Juno
+        does not handle file uploads from forms, but thats at the top of the 
+        todo list.
+
+        To access this data:
+
+            web.input()         # Returns a dictionary of GET/POST data
+
+        To access a specific name ('a' in '?a=4'):
+    
+            web.input('a')      # Gets the value of the GET/POST key 'a'
+
+        If multiple values have the same name (i.e. more than one input field
+        sharing a name), they values are put in a list:
+            
+            web.input('b')      # => ['1', '2'] for '?b=1&b=2'
 
 
     * Response Basics

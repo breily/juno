@@ -56,10 +56,18 @@ Features
 Install
 -------
 
-# ruby setup.rb
-$ python
->>> import juno
+* To get the latest stable version, pull from the 'stable' branch.  Then do:
 
+    $ ruby setup.rb     # Run as root.
+                        # Installs to /usr/local/lib/python2.5/site-packages
+                        # Change INSTALL_DIR in setup.rb to specify a different
+                        # location.
+    $ python
+    >>> import juno     # Make sure it was stored on your PYTHONPATH
+
+* To get the latest development version, pull from master.  The same steps will
+  install it.
+  
 
 Help
 ----
