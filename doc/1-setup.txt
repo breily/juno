@@ -5,13 +5,8 @@
     * Installation
     --------------
 
-    You can install Juno by running `ruby setup.rb` as root.  This puts both
-    juno.py and handlers.py into /usr/local/lib/python2.5/site-packages/,
-    but if your system needs them someplace else just change the INSTALL_DIR
-    variable in setup.rb.
-
-    If you don't have Ruby, all the script does is copy the files, I just don't
-    enjoy writing Bash scripts.
+    Juno consists of just one Python module, and is installed with the usual
+    `python setup.py install`, run as root.
 
 
     * Server Configuration
