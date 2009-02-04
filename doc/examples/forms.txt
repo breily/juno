@@ -1,0 +1,21 @@
+
+
+** Using Forms in Juno
+======================
+
+    Suppose you have a form:
+        
+        <form action='/submit/' method='post'>
+            <input type='text' name='email' />
+            <input type='submit' />
+        </form>
+
+    In the view assigned to '/submit/', you can access the form elements using:
+        
+        web.input()         # => {'email': 'brian@brianreily.com'}
+        web.input('email')  # => 'brian@brianreily.com'
+
+    This works the same for all form elements (except for files - right now 
+    the `web.input('file_field')` only holds the name of the file, as Juno
+    doesn't put the file data in yet.  Thats in progress though.), as well as
+    query strings from GET requests.
