@@ -36,6 +36,7 @@ class Juno(object):
                 '404_template':   '404.html',
                 'db_type':        'sqlite',
                 'db_location':    ':memory:',
+                'basic_auth_realm': 'Restricted Access',
                 }
         if config is not None: self.config.update(config)
         # Set up Jinja2
@@ -219,7 +220,7 @@ class JunoRequest(object):
         return '<JunoRequest: %s>' %self.location
 
 class JunoResponse(object):
-    status_codes = {200: 'OK', 302: 'Found', 404: 'Not Found'}
+    status_codes = {200: 'OK', 302: 'Found', 401: 'Unauthorized', 404: 'Not Found'}
     def __init__(self, config=None, **kwargs):
         # Set options and merge in user-set options
         self.config = {
@@ -308,6 +309,30 @@ def get(url=None):    return route(url, 'get')
 def head(url=None):   return route(url, 'head')
 def put(url=None):    return route(url, 'put')
 def delete(url=None): return route(url, 'delete')
+
+# Decorator to enforce HTTP Basic Access Authentication
+
+def require_basicauth(f):
+    def authenticate(*args, **kwargs):
+        def unauthorized():
+            return JunoResponse(
+                config={'status':401, },
+                headers={'WWW-Authenticate': 'Basic realm="%s"' % _hub.basic_auth_realm, }
+            )
+        
+        req = args[0]
+        if 'Authorization' in req:
+            (authmeth, auth) = req['Authorization'].split(' ', 1)
+            if 'basic' != authmeth.lower():
+                return unauthorized()
+            auth = auth.strip().decode('base64')
+            username, password = auth.split(':',1)
+            newargs = [args[0], username, password] + list(args[1:])
+            return f(*newargs, **kwargs)
+        else:
+            return unauthorized()
+    authenticate.__name__ = f.__name__
+    return authenticate
 
 #
 #   Functions to deal with the global response object (_response)
