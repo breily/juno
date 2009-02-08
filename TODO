@@ -1,20 +1,22 @@
 ) Handle form file uploads
+) Add support for sessions
+) Tutorial
+
+Also:
 
 ) For url parameters:
-  -- allow unnamed parameters (give default name, maybe 'star' or 'splat')
+  -- allow unnamed parameters (give default name, maybe 'star' or 'splat'),
+     like: '/product/*/' would be the same as '/product/*:splat/'
   -- parameters with the same name become a list, i.e.:
      /a/*:foo/b/*:foo/ => /a/a/b/b/, foo => ["a", "b"]
 
 ) Make the HTTPRequestHandler just use the self.headers dict instead of
-  casting it to a string and splitting it (why did I do that to begin with?)
-  -- Ah I remember why, its an instance of MessageClass which I can't find
-     any docs for
+  casting it to a string and splitting it
+  -- Its an instance of MessageClass which I can't find any docs for
   -- Check http://code.activestate.com/recipes/392879/   
 
 ) Investigate why dev server takes so long to start up  
 
-) Use modified Items code to replace database code.
-
-) Let autotemplate and assign use url arguments.
+) Let autotemplate() and assign() use url arguments.
 
 ) Add more status codes to Response objects.
