@@ -174,8 +174,10 @@ class JunoRequest(object):
             self.full_location = request['REQUEST_URI']
         else: self.full_location = self.location
         # Find the right user agent header
-        if 'HTTP_USER_AGENT' in request: self.user_agent = request['HTTP_USER_AGENT']
-        elif 'User-Agent' in request: self.user_agent = request['User-Agent']
+        if 'HTTP_USER_AGENT' in request: 
+            self.user_agent = request['HTTP_USER_AGENT']
+        elif 'User-Agent' in request: 
+            self.user_agent = request['User-Agent']
         else: self.user_agent = '?'
         self.combine_request_dicts()
     
@@ -190,7 +192,8 @@ class JunoRequest(object):
         for k, v in input_dict.items():
             input_dict[k] = [cgi.escape(i) for i in v]
         # Reduce the dict - change one item lists ([a] to a)
-        for k, v in input_dict.items(): if len(v) == 1: input_dict[k] = v[0]
+        for k, v in input_dict.items(): 
+            if len(v) == 1: input_dict[k] = v[0]
         self.raw['input'] = input_dict
 
     def __getattr__(self, attr):
