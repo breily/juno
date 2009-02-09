@@ -216,7 +216,7 @@ class JunoRequest(object):
     def items(self): return self.raw.items()
     def values(self): return self.raw.values()
     def __len__(self): return len(self.raw)
-    def __contains(self, key): return key in self.raw
+    def __contains__(self, key): return key in self.raw
 
     def __repr__(self):
         return '<JunoRequest: %s>' %self.location
