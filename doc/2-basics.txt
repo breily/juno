@@ -30,9 +30,9 @@
                                                 # 'static_root'.  Uses mimetypes
                                                 # to determine content-type.
     
-        'template_dir' => './templates/'    # Where Juno looks for template files.
-        '404_template' => '404.html'        # Filename of template used with the
-                                            # notfound() function.
+        'template_root' => './templates/' # Where Juno looks for template files.
+        '404_template' => '404.html'      # Filename of template used with the
+                                          # notfound() function.
 
         'db_type' => 'sqlite'           # Default database engine is sqlite.
         'db_location' => ':memory:'     # Default database location is in-memory.

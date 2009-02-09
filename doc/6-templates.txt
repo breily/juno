@@ -6,7 +6,7 @@
     --------
 
         Juno looks for templates in './templates/' by default.  To change this,
-        change 'template_dir' when calling init().
+        change 'template_root' when calling init().
 
         Juno uses Jinja2 templates (http://jinja.pocoo.org/2/).
 

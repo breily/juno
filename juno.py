@@ -14,6 +14,7 @@ import SocketServer
 import BaseHTTPServer
 import urlparse
 import cgi
+from wsgiref.simple_server import make_server
 
 
 class Juno(object):
@@ -29,10 +30,11 @@ class Juno(object):
                 'mode':           'dev',
                 'scgi_port':      8000,
                 'dev_port':       8000,
+                'wsgi_port':      8000,
                 'static_url':     '/static/*:file/',
                 'static_root':    './static/',
                 'static_handler': static_serve,
-                'template_dir':   './templates/',
+                'template_root':  './templates/',
                 '404_template':   '404.html',
                 'db_type':        'sqlite',
                 'db_location':    ':memory:',
@@ -40,7 +42,7 @@ class Juno(object):
         if config is not None: self.config.update(config)
         # Set up Jinja2
         self.config['template_env'] = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(self.config['template_dir']))
+            loader=jinja2.FileSystemLoader(self.config['template_root']))
         # set up the static file handler
         self.route(self.config['static_url'], self.config['static_handler'], '*')
         # set up the database (first part ensures correct slash number for sqlite)
@@ -58,8 +60,10 @@ class Juno(object):
             run_dev('', self.config['dev_port'], self.request)
         elif mode == 'scgi':
             run_scgi('', self.config['scgi_port'], self.request)
+        elif mode == 'wsgi':
+            run_wsgi('', self.config['wsgi_port'], self.request)
         else:
-            print 'error: only scgi and the dev server are supported now'
+            print 'error: only scgi, wsgi and the dev server are supported now'
             print 'exiting juno...'
 
     def request(self, request, method='*', **kwargs):
@@ -82,11 +86,11 @@ class Juno(object):
             if response is None: response = _response
             # If we don't have a string, render the Response to one
             if isinstance(response, JunoResponse):
-                return response.render()
-            return response
+                return response
+            return JunoResponse(body=response)
         # No matches - 404
         if self.log: print 'No match, returning 404...\n'
-        return notfound(error='No matching routes registered').render()
+        return notfound(error='No matching routes registered')
 
     def route(self, url, func, method):
         """Attaches a view to a url or list of urls, for a given function. """
@@ -181,12 +185,15 @@ class JunoRequest(object):
         else: self.user_agent = '?'
     
     def combine_request_dicts(self):
-        input_dict = self.raw['GET_DICT']
+        input_dict = self.raw['GET_DICT'].copy()
         for k, v in self.raw['POST_DICT'].items():
             # Combine repeated keys
             if k in input_dict.keys(): input_dict[k].extend(v)
             # Otherwise just add this key
             else: input_dict[k] = v
+        # Escape each item in the input dict
+        for k, v in input_dict.items():
+            input_dict[k] = [cgi.escape(i) for i in v]
         # Reduce the dict - change one item lists ([a] to a)
         for k, v in input_dict.items():
             if len(v) == 1: input_dict[k] = v[0]
@@ -514,11 +521,16 @@ class HTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def process(self, uri, method='*', **kwargs): return ''
 
 def run_dev(addr, port, process_func):
-    HTTPRequestHandler.process = process_func
+    # All the dev server does is take the JunoResponse and render it
+    def http_handler(self, uri, method='*', **kwargs):
+        juno_response = process_func(uri, method, **kwargs)
+        return juno_response.render()
+    HTTPRequestHandler.process = http_handler
     server = BaseHTTPServer.HTTPServer((addr, port), HTTPRequestHandler)
+    if addr == '': addr = '127.0.0.1'
     print ''
     print 'running Juno development server, <C-c> to exit...'
-    print 'connect to 127.0.0.1:%s to use your app...' %port
+    print 'connect to %s:%s to use your app...' %(addr, port)
     print ''
     serve(server)
 
@@ -557,11 +569,64 @@ class SCGIRequestHandler(SocketServer.BaseRequestHandler):
     def process(self, uri, method='*', **kwargs): return ''
 
 def run_scgi(addr, port, process_func):
-    SCGIRequestHandler.process = process_func
+    # All SCGI does is take the JunoResponse and render it
+    def scgi_handler(self, uri, method='*', **kwargs):
+        juno_response = process_func(uri, method, **kwargs)
+        return juno_response.render()
+    SCGIRequestHandler.process = scgi_handler
     server = SocketServer.TCPServer((addr, port), SCGIRequestHandler)
+    if addr == '': addr = '127.0.0.1'
     print ''
     print 'running Juno SCGI server, <C-c> to exit...'
-    print 'connect to 127.0.0.1:80 to use your app...'
+    print 'connect to %s:80 to use your app...' %addr
     print ''
     serve(server)
 
+def run_wsgi(addr, port, process_func):
+    def wsgi_handler(environ, start_response):
+        # Ensure some environ variables exist (WSGI doesn't guarantee these)
+        if not environ['PATH_INFO']: environ['PATH_INFO'] = '/'
+        if not environ['QUERY_STRING']: environ['QUERY_STRING'] = ''
+        if not environ['CONTENT_LENGTH']: environ['CONTENT_LENGTH'] = '0'
+        # Standardize some header names
+        environ['DOCUMENT_URI'] = environ['PATH_INFO']
+        if environ['QUERY_STRING']:
+            environ['REQUEST_URI'] = environ['PATH_INFO']+'?'+environ['QUERY_STRING']
+        else:
+            environ['REQUEST_URI'] = environ['DOCUMENT_URI']
+        # Parse query string arguments
+        if environ['REQUEST_METHOD'] == 'GET':
+            environ['GET_DICT'] = cgi.parse_qs(environ['QUERY_STRING'], 
+                                               keep_blank_values=1)
+        else: environ['GET_DICT'] = {}
+        if environ['REQUEST_METHOD'] == 'POST':
+            # Read from the POST file, skipping read errors or errors formatting
+            # the Content-Length header
+            try:
+                post_data = environ['wsgi.input'].read(int(environ['CONTENT_LENGTH']))
+            except:
+                post_data = ''
+            environ['POST_DICT'] = cgi.parse_qs(post_data,
+                                                keep_blank_values=1)
+        else: environ['POST_DICT'] = {}
+        # WSGI request is now ready to pass to Juno
+        juno_response = process_func(environ['DOCUMENT_URI'],
+                                     environ['REQUEST_METHOD'],
+                                     **environ)
+        # Make a status string of '%(status code) %(status string)'
+        status = juno_response.config['status']
+        status = '%s %s' %(status, juno_response.status_codes[status])
+        # Make sure every header is a string
+        headers = [(str(k), str(v)) for k, v in 
+                   juno_response.config['headers'].items()]
+        # WSGI uses start_response to return status and headers
+        start_response(status, headers)
+        # Then return the body
+        return [juno_response.config['body']]
+    httpd = make_server(addr, port, wsgi_handler)
+    if addr == '': addr = '127.0.0.1'
+    print ''
+    print 'running Juno WSGI server, <C-c> to exit...'
+    print 'connect to %s:%s to use your app...' %(addr, port)
+    print ''
+    httpd.serve_forever()

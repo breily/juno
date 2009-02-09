@@ -50,7 +50,7 @@ Features
 --------
 
 - All normal web framework stuff (models, views, routes, templates)
-- Development server
+- Development server, plus WSGI server
 - Uses SCGI to connect to Nginx/Apache/etc.
 - Templating through Jinja2
 - Database access through SQLAlchemy
