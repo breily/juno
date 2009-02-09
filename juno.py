@@ -582,6 +582,7 @@ def run_scgi(addr, port, process_func):
     print ''
     serve(server)
 
+# Sets up and runs a test WSGI server.  Doesn't talk to a real server yet.
 def run_wsgi(addr, port, process_func):
     def wsgi_handler(environ, start_response):
         # Ensure some environ variables exist (WSGI doesn't guarantee these)
@@ -630,3 +631,4 @@ def run_wsgi(addr, port, process_func):
     print 'connect to %s:%s to use your app...' %(addr, port)
     print ''
     httpd.serve_forever()
+
