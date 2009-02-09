@@ -109,11 +109,7 @@ class Juno(object):
 
 class JunoRoute(object):
     """Uses a simplified regex to grab url parts:
-    i.e., '/hello/*:name/' compiles to '^/hello/(?P<name>\w+)/'
-    Considering adding '#' to match only numbers and '@' to match only letters
-    i.e. '/id/#:id/' => '^/id/(?P<id>\d+)/'
-    and  '/hi/@:name/' => '^/hi/(?P<name>[a-zA-Z])/'
-    """
+    i.e., '/hello/*:name/' compiles to '^/hello/(?P<name>\w+)/' """
     def __init__(self, url, func, method):
         # Make sure the url begins and ends in a '/'
         if url[0] != '/': url = '/' + url
@@ -125,7 +121,7 @@ class JunoRoute(object):
         # Start building our modified url
         buffer = '^'
         for part in url.split('/'):
-            # Beginning and end portions are empty
+            # Beginning and end entries are empty, so skip them
             if not part: continue
             match_obj = splat_re.match(part)
             # If it doesn't match, just add it without modification
@@ -160,10 +156,10 @@ class JunoRoute(object):
 
 class JunoRequest(object):
     """Offers following members:
-        raw => the header dictionary used to construct the JunoRequest
-        location => uri being requested, without query string ('/' from '/?a=6')
+        raw           => the header dict used to construct the JunoRequest
+        location      => uri being requested, without query string ('/' from '/?a=6')
         full_location => uri with query string ('/?a=6' from '/?a=6')
-        user_agent => the user agent string of requester
+        user_agent    => the user agent string of requester
     """
     def __init__(self, request):
         # Make sure we have a request uri, and it ends in '/'
@@ -177,12 +173,11 @@ class JunoRequest(object):
         if 'REQUEST_URI' in request:
             self.full_location = request['REQUEST_URI']
         else: self.full_location = self.location
-        # Build the input dict
-        self.combine_request_dicts()
         # Find the right user agent header
         if 'HTTP_USER_AGENT' in request: self.user_agent = request['HTTP_USER_AGENT']
         elif 'User-Agent' in request: self.user_agent = request['User-Agent']
         else: self.user_agent = '?'
+        self.combine_request_dicts()
     
     def combine_request_dicts(self):
         input_dict = self.raw['GET_DICT'].copy()
@@ -195,25 +190,23 @@ class JunoRequest(object):
         for k, v in input_dict.items():
             input_dict[k] = [cgi.escape(i) for i in v]
         # Reduce the dict - change one item lists ([a] to a)
-        for k, v in input_dict.items():
-            if len(v) == 1: input_dict[k] = v[0]
+        for k, v in input_dict.items(): if len(v) == 1: input_dict[k] = v[0]
         self.raw['input'] = input_dict
 
     def __getattr__(self, attr):
         # Try returning values from self.raw
-        if attr in self.keys():
-            return self.raw[attr]
+        if attr in self.keys(): return self.raw[attr]
         return None
 
     def input(self, arg=None):
         # No args: return the whole dictionary
         if arg is None: return self.raw['input']
         # Otherwise try to return the value for that key
-        if self.raw['input'].has_key(arg):
+        if self.raw['input'].has_key(arg): 
             return self.raw['input'][arg]
         return None
 
-    # Make JunoRequest as a dictionary for self.raw
+    # Make JunoRequest act as a dictionary for self.raw
     def __getitem__(self, key): return self.raw[key]
     def __setitem__(self, key, val): self.raw[key] = val
     def keys(self): return self.raw.keys()

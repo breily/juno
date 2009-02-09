@@ -5,6 +5,8 @@
 Also:
 
 ) For url parameters:
+  -- Possible 3 types of wildcards: '*' to match anything, '#' to match numbers,
+     and '@' to match letters.
   -- allow unnamed parameters (give default name, maybe 'star' or 'splat'),
      like: '/product/*/' would be the same as '/product/*:splat/'
   -- parameters with the same name become a list, i.e.:
