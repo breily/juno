@@ -50,8 +50,7 @@ Features
 --------
 
 - All normal web framework stuff (models, views, routes, templates)
-- Development server, plus WSGI server
-- Uses SCGI to connect to Nginx/Apache/etc.
+- Uses WSGI as a development server, and connects to Nginx/Apache/etc. with SCGI
 - Templating through Jinja2
 - Database access through SQLAlchemy
 
@@ -67,7 +66,8 @@ Install
 
 * To get the latest development version, pull from master.  The same steps will
   install it.
-  
+
+* Dependencies: Jinja2, SQLAlchemy, Flup (for SCGI only)
 
 Help
 ----
