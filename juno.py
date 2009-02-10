@@ -36,6 +36,7 @@ class Juno(object):
                 'static_handler': static_serve,
                 'template_root':  './templates/',
                 '404_template':   '404.html',
+                '500_template':   '500.html',
                 'db_type':        'sqlite',
                 'db_location':    ':memory:',
                 }
@@ -56,6 +57,7 @@ class Juno(object):
         """Runs the Juno hub, in the set mode (default now is scgi). """
         # If a mode is specified, use it. Otherwise use the mode from the config.
         mode = mode if mode else self.config['mode']
+        self.config['mode'] = mode
         if mode == 'dev':
             run_dev('', self.config['dev_port'], self.request)
         elif mode == 'scgi':
@@ -81,7 +83,13 @@ class Juno(object):
             if self.log: print '%s matches, calling %s()...\n' %(
                 route.old_url, route.func.__name__)
             # Get the return from the view    
-            response = route.dispatch(req_obj)
+            try:
+                response = route.dispatch(req_obj)
+            except:
+                if self.mode == 'dev':
+                    return servererror(error=str(sys.exc_info()))
+                else:
+                    return servererror()
             # If nothing returned, use the global object
             if response is None: response = _response
             # If we don't have a string, render the Response to one
@@ -222,7 +230,12 @@ class JunoRequest(object):
         return '<JunoRequest: %s>' %self.location
 
 class JunoResponse(object):
-    status_codes = {200: 'OK', 302: 'Found', 404: 'Not Found'}
+    status_codes = {
+        200: 'OK', 
+        302: 'Found', 
+        404: 'Not Found',
+        500: 'Internal Server Error',
+    }
     def __init__(self, config=None, **kwargs):
         # Set options and merge in user-set options
         self.config = {
@@ -332,13 +345,15 @@ def content_type(type):
     """Set the content type header. """
     header('Content-Type', type)
 
+def status(code):
+    _response.config['status'] = code
+
 #
 #   Convenience functions for 404s and redirects
 #
 
 def redirect(url):
-    global _response
-    _response.config['status'] = 302
+    status(302)
     # clear the response headers and add the location header
     _response.config['headers'] = { 'Location': url }
     return _response
@@ -350,9 +365,16 @@ def assign(from_, to):
         def temp(web): redirect(to)
 
 def notfound(error='Unspecified error', file=None):
-    """Appends the rendered 404 template to response body. """
+    """Sets the response to a 404, sets the body to 404_template."""
+    status(404)
     file = file if file else config('404_template')
-    return append(template(file).render(error=error))
+    template(file, error=error)
+
+def servererror(error='Unspecified error', file=None):
+    """Sets the response to a 500, sets the body to 500_template."""
+    status(500)
+    file = file if file else config('500_template')
+    template(file, error=error)
 
 #
 #   Serve static files.
