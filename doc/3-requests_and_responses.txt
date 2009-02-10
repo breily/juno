@@ -57,7 +57,8 @@
             append(text)       => Add text to the response.  Automatically 
                                   updates the Content-Length header.
             header(key, value) => Set a member of the headers dictionary.
-            content_type(type) => Specify a Content-Type other than 'text/html'
+            content_type(type) => Specify a Content-Type other than 'text/html'.
+            status(code)       => Specify a response code other than 200.
 
         To return a 404 response:
             
