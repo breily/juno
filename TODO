@@ -12,13 +12,4 @@ Also:
   -- parameters with the same name become a list, i.e.:
      /a/*:foo/b/*:foo/ => /a/a/b/b/, foo => ["a", "b"]
 
-) Make the HTTPRequestHandler just use the self.headers dict instead of
-  casting it to a string and splitting it
-  -- Its an instance of MessageClass which I can't find any docs for
-  -- Check http://code.activestate.com/recipes/392879/   
-
-) Investigate why dev server takes so long to start up  
-
 ) Let autotemplate() and assign() use url arguments.
-
-) Add more status codes to Response objects.
