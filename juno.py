@@ -26,7 +26,6 @@ class Juno(object):
                 'mode':           'dev',
                 'scgi_port':      8000,
                 'dev_port':       8000,
-                'wsgi_port':      8000,
                 'static_url':     '/static/*:file/',
                 'static_root':    './static/',
                 'static_handler': static_serve,
@@ -58,10 +57,8 @@ class Juno(object):
             run_dev('', self.config['dev_port'], self.request)
         elif mode == 'scgi':
             run_scgi('', self.config['scgi_port'], self.request)
-        elif mode == 'wsgi':
-            run_wsgi('', self.config['wsgi_port'], self.request)
         else:
-            print 'error: only scgi, wsgi and the dev server are supported now'
+            print 'error: only scgi and the dev server are supported now'
             print 'exiting juno...'
 
     def request(self, request, method='*', **kwargs):
@@ -486,7 +483,7 @@ def find(model_cls):
     return session().query(model_cls)
 
 ####
-#   Juno's Servers - Development and SCGI
+#   Juno's Servers - Development (using WSGI), and SCGI (using Flup)
 ####
 
 def serve(server):
@@ -499,32 +496,6 @@ def serve(server):
 def get_application(process_func):
     def application(environ, start_response):
         # Ensure some variable exist (WSGI doesn't guarantee them)
-        if not environ['PATH_INFO']: environ['PATH_INFO'] = '/'
-        if 'REQUEST_URI' in environ:
-            uri = environ['REQUEST_URI']
-            uri = uri.split('?')[0]
-        else:
-            uri = environ['PATH_INFO']
-        method = environ['REQUEST_METHOD']
-        if not environ['CONTENT_LENGTH']: 
-
-def run_dev(addr, port, process_func):
-    from wsgiref.simple_server import make_server
-    print ''
-    print 'running Juno development server, <C-c> to exit...'
-    print 'connect to 127.0.0.1:%s to use your app...' %port
-    print ''
-    srv = make_server(addr, port, get_application(process_func))
-    serve(srv)
-
-def run_scgi(addr, port, process_func):
-    from flup.server.scgi import WSGIServer
-    WSGIServer(get_application(process_func), bindAddress=(addr, port)).run()
-
-# Sets up and runs a test WSGI server.  Doesn't talk to a real server yet.
-def run_wsgi(addr, port, process_func):
-    def wsgi_handler(environ, start_response):
-        # Ensure some environ variables exist (WSGI doesn't guarantee these)
         if not environ['PATH_INFO']: environ['PATH_INFO'] = '/'
         if not environ['QUERY_STRING']: environ['QUERY_STRING'] = ''
         if not environ['CONTENT_LENGTH']: environ['CONTENT_LENGTH'] = '0'
@@ -549,18 +520,24 @@ def run_wsgi(addr, port, process_func):
             environ['POST_DICT'] = cgi.parse_qs(post_data,
                                                 keep_blank_values=1)
         else: environ['POST_DICT'] = {}
-        # WSGI request is now ready to pass to Juno
-        juno_response = process_func(environ['DOCUMENT_URI'],
-                                     environ['REQUEST_METHOD'],
-                                     **environ)
-        # Make a status string of '%(status code) %(status string)'
-        status = juno_response.config['status']
-        status = '%s %s' %(status, juno_response.status_codes[status])
-        # Make sure every header is a string
-        headers = [(str(k), str(v)) for k, v in 
-                   juno_response.config['headers'].items()]
-        # WSGI uses start_response to return status and headers
-        start_response(status, headers)
-        # Then return the body
-        return [juno_response.config['body']]
-    httpd = make_server(addr, port, wsgi_handler)
+        # Done parsing inputs, now reading to send to Juno
+        (status_str, headers, body) = process_func(environ['DOCUMENT_URI'],
+                                      environ['REQUEST_METHOD'],
+                                      **environ)
+        start_response(status_string, headers)
+        return [body]
+    return application
+
+def run_dev(addr, port, process_func):
+    from wsgiref.simple_server import make_server
+    print ''
+    print 'running Juno development server, <C-c> to exit...'
+    print 'connect to 127.0.0.1:%s to use your app...' %port
+    print ''
+    srv = make_server(addr, port, get_application(process_func))
+    serve(srv)
+
+def run_scgi(addr, port, process_func):
+    from flup.server.scgi import WSGIServer
+    WSGIServer(get_application(process_func), bindAddress=(addr, port)).run()
+
