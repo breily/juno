@@ -33,6 +33,8 @@
         'template_root' => './templates/' # Where Juno looks for template files.
         '404_template' => '404.html'      # Filename of template used with the
                                           # notfound() function.
+        '500_template' => '500.html'      # Filename of template used with the
+                                          # servererror() function.
 
         'db_type' => 'sqlite'           # Default database engine is sqlite.
         'db_location' => ':memory:'     # Default database location is in-memory.

@@ -73,6 +73,11 @@
             redirect(url) => Sets the global response to a status of 302 with a 
                              'Location' header set to url.
 
+        To return a 500 (server error) response:
+            
+            servererror(error, file) => Renders the 500_template. error defaults
+                                        to 'Unspecified error'.
+
         To automatically assign urls, without creating a view to do it:
             
             assign(from, to) => Called from outside of a view, automatically
