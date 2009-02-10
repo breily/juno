@@ -6,6 +6,7 @@ try:
 except:
     print '** Jinja2 templates are required by Juno'
     print '** Download from: http://pypi.python.org/pypi/Jinja2'
+    print '** Or run: `easy_install Jinja2`'
     sys.exit()
 
 try:
@@ -13,6 +14,7 @@ try:
 except:
     print '** SQLAlchemy is required by Juno'
     print '** Download from: http://sqlalchemy.org/download.html'
+    print '** Or run: `easy_install SQLAlchemy`'
     sys.exit()
 
 setup(name         = 'juno',
