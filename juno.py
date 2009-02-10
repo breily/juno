@@ -10,12 +10,8 @@ from sqlalchemy import Unicode, Text, UnicodeText, Date, Numeric, Time, Float
 from sqlalchemy import DateTime, Interval, Binary, Boolean, PickleType
 from sqlalchemy.orm import sessionmaker, mapper
 # Server imports
-import SocketServer
-import BaseHTTPServer
 import urlparse
 import cgi
-from wsgiref.simple_server import make_server
-
 
 class Juno(object):
     def __init__(self, config=None):
@@ -69,8 +65,9 @@ class Juno(object):
             print 'exiting juno...'
 
     def request(self, request, method='*', **kwargs):
-        """Called when a request is received, routes a url to its request. 
-        Returns a string, currently set as a JunoResponse.render()."""
+        """Called when a request is received.  Routes a url to its view.
+        Returns a 3-tuple (status_string, headers, body) from 
+        JunoResponse.render()."""
         if self.log: print '%s request for %s...' %(method, request)
         req_obj = JunoRequest(kwargs)
         # Set the global response object in case the view wants to use it
@@ -86,16 +83,13 @@ class Juno(object):
             try:
                 response = route.dispatch(req_obj)
             except:
-                if self.mode == 'dev':
-                    return servererror(error=str(sys.exc_info()))
-                else:
-                    return servererror()
+                return servererror(error=str(sys.exc_info()))
             # If nothing returned, use the global object
             if response is None: response = _response
             # If we don't have a string, render the Response to one
             if isinstance(response, JunoResponse):
-                return response
-            return JunoResponse(body=response)
+                return response.render()
+            return JunoResponse(body=response).render()
         # No matches - 404
         if self.log: print 'No match, returning 404...\n'
         return notfound(error='No matching routes registered')
@@ -258,15 +252,13 @@ class JunoResponse(object):
     def __iadd__(self, text):
         return self.append(text)
 
-    # Write to a string
     def render(self):
-        response = 'HTTP/1.1 %s %s\r\n' %(self.config['status'],
-            self.status_codes[self.config['status']])
-        for header, val in self.config['headers'].items():
-            response += ': '.join((header, str(val))) + '\r\n'
-        response += '\r\n'
-        response += '%s' %self.config['body']
-        return response
+        """Returns a 3-tuple (status_string, headers, body)."""
+        status_string = '%s %s' %(self.config['status'],
+                                  self.status_codes[self.config['status']])
+        headers = [(k, str(v)) for k, v in self.config['headers'].items()]
+        body = '%s' %self.config['body']
+        return (status_string, headers, body)
 
     # Set a header value
     def header(self, header, value):
@@ -504,101 +496,30 @@ def serve(server):
         print 'interrupted; exiting juno...'
         server.socket.close()
 
-class HTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-    def do_GET(self): self.do_request()
-    def do_POST(self): self.do_request()
-    def do_PUT(Self): self.do_request()
-    def do_HEAD(self): self.do_request()
-    def do_DELETE(self): self.do_request()
-    
-    def do_request(self):
-        parsed = urlparse.urlparse(self.path)
-        data_dict = {
-             'REQUEST_URI': self.path, 
-             'REQUEST_METHOD': self.command,
-             'QUERY_STRING': parsed.query, 
-             'DOCUMENT_URI': parsed.path if parsed.path[-1] == '/' else parsed.path + '/',
-             'GET_DICT': cgi.parse_qs(parsed.query, keep_blank_values=1),
-        }
-        # TODO: Fix this, see TODO file      
-        # perhaps: self.headers.getheader('content-type')
-        data = str(self.headers).split('\r\n')
-        for line in data:
-            if not line: continue
-            (x, y) = [a.strip() for a in line.split(':', 1)]
-            data_dict[x] = y
-        # find POST data
-        if self.command == 'POST':
-            data_dict['POST_DATA'] = self.rfile.read(int(data_dict['Content-Length']))
-        else: data_dict['POST_DATA'] = ''
-        # Build POST dictionary
-        data_dict['POST_DICT'] = cgi.parse_qs(data_dict['POST_DATA'],
-                                    keep_blank_values=1)
-        self.wfile.write(self.process(parsed.path, self.command, **data_dict))
-
-    def process(self, uri, method='*', **kwargs): return ''
+def get_application(process_func):
+    def application(environ, start_response):
+        # Ensure some variable exist (WSGI doesn't guarantee them)
+        if not environ['PATH_INFO']: environ['PATH_INFO'] = '/'
+        if 'REQUEST_URI' in environ:
+            uri = environ['REQUEST_URI']
+            uri = uri.split('?')[0]
+        else:
+            uri = environ['PATH_INFO']
+        method = environ['REQUEST_METHOD']
+        if not environ['CONTENT_LENGTH']: 
 
 def run_dev(addr, port, process_func):
-    # All the dev server does is take the JunoResponse and render it
-    def http_handler(self, uri, method='*', **kwargs):
-        juno_response = process_func(uri, method, **kwargs)
-        return juno_response.render()
-    HTTPRequestHandler.process = http_handler
-    server = BaseHTTPServer.HTTPServer((addr, port), HTTPRequestHandler)
-    if addr == '': addr = '127.0.0.1'
+    from wsgiref.simple_server import make_server
     print ''
     print 'running Juno development server, <C-c> to exit...'
-    print 'connect to %s:%s to use your app...' %(addr, port)
+    print 'connect to 127.0.0.1:%s to use your app...' %port
     print ''
-    serve(server)
-
-class SCGIRequestHandler(SocketServer.BaseRequestHandler):
-    def handle(self):
-        data = self.request.recv(1024)
-        if data:
-            request_dict = self.build_scgi_dict(data)
-            uri = request_dict['DOCUMENT_URI']
-            method = request_dict['REQUEST_METHOD']
-            self.request.send(self.process(uri, method, **request_dict))
-        self.request.close()
-
-    def build_scgi_dict(self, data):
-        """
-        Might not be the best way to parse the SCGI request.  Doesn't use
-        the provided length at all, so if for some reason a header starts
-        with ',' then it will break (seems unlikely though).
-        """
-        data_len, data = data.split(':', 1)
-        count = 0
-        data_list = data.split(chr(0))
-        data_dict = {}
-        while data_list[count][0] != ',':
-            data_dict[data_list[count]] = data_list[count + 1]
-            count += 2
-        msg = data_list[count][1:]
-        data_dict['POST_DATA'] = msg
-        # Build POST and GET dictionaries
-        data_dict['POST_DICT'] = cgi.parse_qs(data_dict['POST_DATA'],
-                                    keep_blank_values=1)
-        data_dict['GET_DICT'] = cgi.parse_qs(data_dict['QUERY_STRING'],
-                                    keep_blank_values=1)
-        return data_dict
-    
-    def process(self, uri, method='*', **kwargs): return ''
+    srv = make_server(addr, port, get_application(process_func))
+    serve(srv)
 
 def run_scgi(addr, port, process_func):
-    # All SCGI does is take the JunoResponse and render it
-    def scgi_handler(self, uri, method='*', **kwargs):
-        juno_response = process_func(uri, method, **kwargs)
-        return juno_response.render()
-    SCGIRequestHandler.process = scgi_handler
-    server = SocketServer.TCPServer((addr, port), SCGIRequestHandler)
-    if addr == '': addr = '127.0.0.1'
-    print ''
-    print 'running Juno SCGI server, <C-c> to exit...'
-    print 'connect to %s:80 to use your app...' %addr
-    print ''
-    serve(server)
+    from flup.server.scgi import WSGIServer
+    WSGIServer(get_application(process_func), bindAddress=(addr, port)).run()
 
 # Sets up and runs a test WSGI server.  Doesn't talk to a real server yet.
 def run_wsgi(addr, port, process_func):
@@ -643,10 +564,3 @@ def run_wsgi(addr, port, process_func):
         # Then return the body
         return [juno_response.config['body']]
     httpd = make_server(addr, port, wsgi_handler)
-    if addr == '': addr = '127.0.0.1'
-    print ''
-    print 'running Juno WSGI server, <C-c> to exit...'
-    print 'connect to %s:%s to use your app...' %(addr, port)
-    print ''
-    httpd.serve_forever()
-
