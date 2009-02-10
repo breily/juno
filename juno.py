@@ -524,7 +524,7 @@ def get_application(process_func):
         (status_str, headers, body) = process_func(environ['DOCUMENT_URI'],
                                       environ['REQUEST_METHOD'],
                                       **environ)
-        start_response(status_string, headers)
+        start_response(status_str, headers)
         return [body]
     return application
 
