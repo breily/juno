@@ -254,6 +254,7 @@ class JunoResponse(object):
         status_string = '%s %s' %(self.config['status'],
                                   self.status_codes[self.config['status']])
         headers = [(k, str(v)) for k, v in self.config['headers'].items()]
+        debug_print(headers)
         body = '%s' %self.config['body']
         return (status_string, headers, body)
 
@@ -486,13 +487,6 @@ def find(model_cls):
 #   Juno's Servers - Development (using WSGI), and SCGI (using Flup)
 ####
 
-def serve(server):
-    try:
-        server.serve_forever()
-    except:
-        print 'interrupted; exiting juno...'
-        server.socket.close()
-
 def get_application(process_func):
     def application(environ, start_response):
         # Ensure some variable exist (WSGI doesn't guarantee them)
@@ -522,8 +516,8 @@ def get_application(process_func):
         else: environ['POST_DICT'] = {}
         # Done parsing inputs, now reading to send to Juno
         (status_str, headers, body) = process_func(environ['DOCUMENT_URI'],
-                                      environ['REQUEST_METHOD'],
-                                      **environ)
+                                                   environ['REQUEST_METHOD'],
+                                                   **environ)
         start_response(status_str, headers)
         return [body]
     return application
@@ -535,9 +529,18 @@ def run_dev(addr, port, process_func):
     print 'connect to 127.0.0.1:%s to use your app...' %port
     print ''
     srv = make_server(addr, port, get_application(process_func))
-    serve(srv)
+    try:
+        srv.serve_forever()
+    except:
+        print 'interrupted; exiting juno...'
+        srv.socket.close()
 
 def run_scgi(addr, port, process_func):
-    from flup.server.scgi import WSGIServer
-    WSGIServer(get_application(process_func), bindAddress=(addr, port)).run()
+    from flup.server.scgi import WSGIServer as SCGI
+    SCGI(get_application(process_func), bindAddress=(addr, port)).run()
 
+def run_fcgi(addr, port, process_func):
+    from flup.server.fcgi import WSGIServer as FCGI
+    FCGI(get_application(process_func), bindAddress=(addr, port)).run()
+
+def debug_print(o): print o
