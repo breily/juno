@@ -34,11 +34,14 @@ class Juno(object):
                 '500_template':   '500.html',
                 'db_type':        'sqlite',
                 'db_location':    ':memory:',
+                'use_sessions':   True,
+                'session_key':    'junosession',
                 }
         if config is not None: self.config.update(config)
         # Set up Jinja2
         self.config['template_env'] = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(self.config['template_root']))
+            loader=jinja2.FileSystemLoader(self.config['template_root'])
+        )
         # set up the static file handler
         self.route(self.config['static_url'], self.config['static_handler'], '*')
         # set up the database (first part ensures correct slash number for sqlite)
@@ -179,7 +182,12 @@ class JunoRequest(object):
             self.user_agent = request['User-Agent']
         else: self.user_agent = '?'
         self.combine_request_dicts()
-    
+        # Check for sessions
+        if config('use_sessions'):
+            self.session = request['beaker.session']
+        else:
+            self.session = None
+
     def combine_request_dicts(self):
         input_dict = self.raw['GET_DICT'].copy()
         for k, v in self.raw['POST_DICT'].items():
@@ -254,7 +262,6 @@ class JunoResponse(object):
         status_string = '%s %s' %(self.config['status'],
                                   self.status_codes[self.config['status']])
         headers = [(k, str(v)) for k, v in self.config['headers'].items()]
-        debug_print(headers)
         body = '%s' %self.config['body']
         return (status_string, headers, body)
 
@@ -489,6 +496,10 @@ def find(model_cls):
 
 def get_application(process_func):
     def application(environ, start_response):
+        if environ is None:
+            print 'Error: environ is None for some reason.'
+            print 'Error: environ=%s' %environ
+            sys.exit()
         # Ensure some variable exist (WSGI doesn't guarantee them)
         if not environ['PATH_INFO']: environ['PATH_INFO'] = '/'
         if not environ['QUERY_STRING']: environ['QUERY_STRING'] = ''
@@ -524,11 +535,15 @@ def get_application(process_func):
 
 def run_dev(addr, port, process_func):
     from wsgiref.simple_server import make_server
+    app = get_application(process_func)
+    if config('use_sessions'):
+        from beaker.middleware import SessionMiddleware
+        app = SessionMiddleware(app, key=config('session_key'))
     print ''
     print 'running Juno development server, <C-c> to exit...'
     print 'connect to 127.0.0.1:%s to use your app...' %port
     print ''
-    srv = make_server(addr, port, get_application(process_func))
+    srv = make_server(addr, port, app)
     try:
         srv.serve_forever()
     except:
@@ -543,4 +558,3 @@ def run_fcgi(addr, port, process_func):
     from flup.server.fcgi import WSGIServer as FCGI
     FCGI(get_application(process_func), bindAddress=(addr, port)).run()
 
-def debug_print(o): print o
