@@ -1,4 +1,6 @@
 [ ] Allow/handle form file uploads
+[ ] Abstract out templating engine (don't tie to Jinja)
+[ ] Add authorization.
 [ ] Write a intro tutorial
 [ ] Add other URL wildcards ('#' for numbers, '@' for letters)
 [ ] Allow unnamed URL params

@@ -5,9 +5,9 @@ import os
 import sys
 # Template and DB library imports
 import jinja2
-from sqlalchemy import create_engine, Table, MetaData, Column, Integer, String
-from sqlalchemy import Unicode, Text, UnicodeText, Date, Numeric, Time, Float
-from sqlalchemy import DateTime, Interval, Binary, Boolean, PickleType
+from sqlalchemy import (create_engine, Table, MetaData, Column, Integer, String
+                        Unicode, Text, UnicodeText, Date, Numeric, Time, Float
+                        DateTime, Interval, Binary, Boolean, PickleType)
 from sqlalchemy.orm import sessionmaker, mapper
 # Server imports
 import urlparse
