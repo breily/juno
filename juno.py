@@ -454,35 +454,52 @@ def model(model_name, **kwargs):
     if not _hub: init()
     # Functions for the class
     def __init__(self, **kwargs):
-        for k, v in kwargs.items(): self.__dict__[k] = v
-    def add(self): session().add(self)
+        for k, v in kwargs.items(): 
+            self.__dict__[k] = v
+    def add(self): 
+        session().add(self)
+        return self
     def commit(self):
         session().add(self)
         session().commit()
-    def __repr__(self): return '<%s: id = %s>' %(self.__name__, self.id)
-    cls_dict = {'__init__': __init__, 'add': add, 'commit': commit,
-                '__name__': model_name, '__repr__': __repr__ }
+        return self
+    def __repr__(self): 
+        return '<%s: id = %s>' %(self.__name__, self.id)
+    # Some static functions for the class
+    def find_func(cls):
+        return session().query(cls)
+    # Build the class's __dict__
+    cls_dict = {'__init__': __init__,
+                'add':      add,
+                'commit':   commit,
+                '__name__': model_name,
+                '__repr__': __repr__,
+                'find':     None,       # Defined later
+               }
     # Parse kwargs to get column definitions
     cols = [ Column('id', Integer, primary_key=True), ]
     for k, v in kwargs.items():
         if callable(v):
             cls_dict[k] = v
-            continue
-        if type(v) == str:
+        elif isinstance(v, Column):
+            if not v.name: v.name = k
+            cols.append(v)
+        elif type(v) == str:
             v = v.lower()
             if v in column_mapping: v = column_mapping[v]
             else: raise NameError("'%s' is not an allowed database column" %v)
-        cols.append(Column(k, v))
+            cols.append(Column(k, v))
     # Create the class    
     tmp = JunoClassConstructor(model_name, (object,), cls_dict)
+    # Add the functions that need an instance of the class
+    tmp.find = staticmethod(lambda: find_func(tmp))
     # Create the table
     metadata = MetaData()
     tmp_table = Table(model_name + 's', metadata, *cols)
     metadata.create_all(config('db_engine'))
     # Map the table to the created class
     mapper(tmp, tmp_table)
-    # Add class and functions to global namespace
-    global models
+    # Track the class
     config('db_models')[model_name] = tmp
     return tmp
 
