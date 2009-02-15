@@ -22,34 +22,44 @@ class Juno(object):
         self.routes = []
         # Set options and merge in user-set options
         self.config = {
-                'log':            True,
+                'log': True,
                 # Server options
-                'mode':           'dev',
-                'scgi_port':      8000,
-                'dev_port':       8000,
+                'mode':     'dev',
+                'scgi_port': 8000,
+                'dev_port':  8000,
                 # Static file handling
                 'static_url':     '/static/*:file/',
                 'static_root':    './static/',
                 'static_handler': static_serve,
                 # Template options
-                'template_root':  './templates/',
-                '404_template':   '404.html',
-                '500_template':   '500.html',
+                'template_lib':            'jinja2',
+                'get_template_function':   get_template,
+                'render_template_funcion': render_template,
+                'template_root':           './templates/',
+                '404_template':            '404.html',
+                '500_template':            '500.html',
                 # Database options
-                'db_type':        'sqlite',
-                'db_location':    ':memory:',
-                'db_models':      {},
+                'db_type':     'sqlite',
+                'db_location': ':memory:',
+                'db_models':   {},
                 # Session options
-                'use_sessions':   True,
-                'session_key':    'junosession',
+                'use_sessions': True,
+                'session_key':  'junosession',
                 }
         if config is not None: self.config.update(config)
         # set up the static file handler
         self.route(self.config['static_url'], self.config['static_handler'], '*')
-        # Set up Jinja2
-        self.config['template_env'] = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(self.config['template_root'])
-        )
+        # Set up templating
+        if self.config['template_lib'] == 'jinja2':
+            import jinja2
+            self.config['template_env'] = jinja2.Environment(
+                loader=jinja2.FileSystemLoader(self.config['template_root'])
+            )
+        elif self.config['template_lib'] == 'mako':
+            import mako.lookup
+            self.config['template_env'] = mako.lookup.TemplateLookup(
+                directories=[self.config['template_root']]
+            )
         # set up the database (first part ensures correct slash number for sqlite)
         if self.config['db_type'] == 'sqlite':
             self.config['db_location'] = '/' + self.config['db_location']
@@ -409,14 +419,32 @@ def yield_file(filename, type=None):
 def template(template_path, template_dict=None, **kwargs):
     """Append a rendered template to response.  If template_dict is provided,
     it is passed to the render function.  If not, kwargs is."""
-    t = get_template(template_path)
-    if not kwargs and not template_dict: return append(t.render())
-    if template_dict: return append(t.render(template_dict))
-    return append(t.render(kwargs))
+    # Retreive a template object.
+    t = config('get_template_function')(template_path)
+    # Render it without arguments.
+    if not kwargs and not template_dict: 
+        return append(config('render_template_function')(t))
+    # Render the template with a provided template dictionary
+    if template_dict: 
+        return append(config('render_template_function')(t, **template_dict))
+    # Render the template with **kwargs
+    return append(config('render_template_function')(t, **kwargs))
 
+# The default value of config('get_template_function')
 def get_template(template_path):
-    """Returns a Jinja2 template object."""
+    """Return a template object.  This is defined for the Jinja2 and
+    Mako libraries, otherwise you have to override it.  Takes one 
+    parameter: a string containing the desired template path.  Needs
+    to return an object that will be passed to your rendering function."""
     return _hub.config['template_env'].get_template(template_path)
+
+# The default value of config('render_template_function')
+def render_template(template_obj, **kwargs):
+    """Renders template object with an optional dictionary of values.
+    Defined for Jinja2 and Mako - override it if you use another
+    library.  Takes a template object as the first parameter, with an
+    optional **kwargs parameter.  Needs to return a string."""
+    return template_obj.render(**kwargs)
 
 def autotemplate(urls, template_path):
     """Automatically renders a template for a given path.  Currently can't
