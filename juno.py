@@ -3,10 +3,9 @@ import mimetypes
 import re
 import os
 import sys
-# Template and DB library imports
-import jinja2
-from sqlalchemy import (create_engine, Table, MetaData, Column, Integer, String
-                        Unicode, Text, UnicodeText, Date, Numeric, Time, Float
+# DB library imports
+from sqlalchemy import (create_engine, Table, MetaData, Column, Integer, String,
+                        Unicode, Text, UnicodeText, Date, Numeric, Time, Float,
                         DateTime, Interval, Binary, Boolean, PickleType)
 from sqlalchemy.orm import sessionmaker, mapper
 # Server imports
@@ -32,12 +31,12 @@ class Juno(object):
                 'static_root':    './static/',
                 'static_handler': static_serve,
                 # Template options
-                'template_lib':            'jinja2',
-                'get_template_function':   get_template,
-                'render_template_funcion': render_template,
-                'template_root':           './templates/',
-                '404_template':            '404.html',
-                '500_template':            '500.html',
+                'template_lib':             'jinja2',
+                'get_template_function':    get_template,
+                'render_template_function': render_template,
+                'template_root':            './templates/',
+                '404_template':             '404.html',
+                '500_template':             '500.html',
                 # Database options
                 'db_type':     'sqlite',
                 'db_location': ':memory:',
