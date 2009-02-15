@@ -463,6 +463,10 @@ def model(model_name, **kwargs):
         session().add(self)
         session().commit()
         return self
+    def save(self):             # Duplicate of commit() as I plan to erase that
+        session().add(self)
+        session().commit()
+        return self
     def __repr__(self): 
         return '<%s: id = %s>' %(self.__name__, self.id)
     # Some static functions for the class

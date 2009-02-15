@@ -22,17 +22,18 @@
 
         brian.add()         # Adds the object to the current session, but
                             # doesn't commit it.
-        brian.commit()      # Adds and commits the object.
+        brian.save()        # Adds and commits the object.
         brian.__repr__()    # Defaults to '<Person: id = X>'
     
 
     * Adding Other Database Columns
     -------------------------------
 
-    Currently only SQLAlchemy's String and Integer columns are supported.
-
-    To use Integer instead of the above String, use 'integer' or 'int' instead
-    of 'string'.
+    You can add database columns by using string versions of their SQLAlchemy
+    column names ('string' for String).  You can also pass in literal Column
+    objects (see the SQLAlchemy docs for information on those):
+        
+        Person = juno.model('Person', name=Column(String))
 
 
     * Adding Custom Functions
@@ -60,6 +61,10 @@
     attach whatever SQLAlchemy methods you need:
 
         people = juno.find(Person).all()
+
+    Models also include a find() function:
+        
+        people = Person.find().all()
 
 
     * Other Notes
@@ -119,11 +124,13 @@
                         normal class you don't call it directly.
             __repr__ => Returns '<class_name: id = id>'
             add      => Adds instance to current session.
-            commit   => Adds and commits instance.
+            save     => Adds and commits instance.
+            find     => Class method to return a Query object.
         > Column types are all lowercase versions of the standard SQLAlchemy
           types ('string', 'integer', 'unicode', 'text', 'unicodetext', 'date',
           'numeric', 'time', 'float', 'datetime', 'interval', 'binary', 'boolean',
-          'pickletype').  See SQLAlchemy reference for details.
+          'pickletype'), or actual Column objects.  See SQLAlchemy reference for 
+          details.
         > Callables are any lambdas or normal functions you want your class
           to have.  Like normal methods, they must take self as their first
           parameter (see __repr__ example).
@@ -133,3 +140,4 @@
         > Returns a SQLAlchemy query object for that model.
         > Takes a single parameter, which can either be a class or a string
           name of one (Person or 'Person').
+        > This is the same as Person.find()
