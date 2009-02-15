@@ -1,12 +1,5 @@
-) Handle form file uploads
-) Tutorial
-
-Also:
-
-) For url parameters:
-  -- Possible 3 types of wildcards: '*' to match anything, '#' to match numbers,
-     and '@' to match letters.
-  -- allow unnamed parameters (give default name, maybe 'star' or 'splat'),
-     like: '/product/*/' would be the same as '/product/*:splat/'
-  -- parameters with the same name become a list, i.e.:
-     /a/*:foo/b/*:foo/ => /a/a/b/b/, foo => ["a", "b"]
+[ ] Allow/handle form file uploads
+[ ] Write a intro tutorial
+[ ] Add other URL wildcards ('#' for numbers, '@' for letters)
+[ ] Allow unnamed URL params
+[ ] Allow URL parameters with the same name
