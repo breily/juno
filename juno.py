@@ -23,27 +23,32 @@ class Juno(object):
         # Set options and merge in user-set options
         self.config = {
                 'log':            True,
+                # Server options
                 'mode':           'dev',
                 'scgi_port':      8000,
                 'dev_port':       8000,
+                # Static file handling
                 'static_url':     '/static/*:file/',
                 'static_root':    './static/',
                 'static_handler': static_serve,
+                # Template options
                 'template_root':  './templates/',
                 '404_template':   '404.html',
                 '500_template':   '500.html',
+                # Database options
                 'db_type':        'sqlite',
                 'db_location':    ':memory:',
+                # Session options
                 'use_sessions':   True,
                 'session_key':    'junosession',
                 }
         if config is not None: self.config.update(config)
+        # set up the static file handler
+        self.route(self.config['static_url'], self.config['static_handler'], '*')
         # Set up Jinja2
         self.config['template_env'] = jinja2.Environment(
             loader=jinja2.FileSystemLoader(self.config['template_root'])
         )
-        # set up the static file handler
-        self.route(self.config['static_url'], self.config['static_handler'], '*')
         # set up the database (first part ensures correct slash number for sqlite)
         if self.config['db_type'] == 'sqlite':
             self.config['db_location'] = '/' + self.config['db_location']
