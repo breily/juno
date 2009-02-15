@@ -27,10 +27,12 @@ class Juno(object):
                 'scgi_port': 8000,
                 'dev_port':  8000,
                 # Static file handling
+                'use_static':     True,
                 'static_url':     '/static/*:file/',
                 'static_root':    './static/',
                 'static_handler': static_serve,
                 # Template options
+                'use_templates':            True,
                 'template_lib':             'jinja2',
                 'get_template_function':    get_template,
                 'render_template_function': render_template,
@@ -48,14 +50,15 @@ class Juno(object):
                 }
         if config is not None: self.config.update(config)
         # set up the static file handler
-        self.route(self.config['static_url'], self.config['static_handler'], '*')
+        if self.config['use_static']:
+            self.route(self.config['static_url'], self.config['static_handler'], '*')
         # Set up templating
-        if self.config['template_lib'] == 'jinja2':
+        if self.config['template_lib'] == 'jinja2' and self.config['use_templates']:
             import jinja2
             self.config['template_env'] = jinja2.Environment(
                 loader=jinja2.FileSystemLoader(self.config['template_root'])
             )
-        elif self.config['template_lib'] == 'mako':
+        if self.config['template_lib'] == 'mako' and self.config['use_templates']:
             import mako.lookup
             self.config['template_env'] = mako.lookup.TemplateLookup(
                 directories=[self.config['template_root']]
