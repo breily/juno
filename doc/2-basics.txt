@@ -45,7 +45,10 @@
         
         init({'db_location': 'info.db', 'mode': 'scgi'})
 
-    
+    Juno includes a number of other options for templates - see the templates
+    documentation page for details.  This will allow you to use en engine
+    other than Jinja2.
+
     * Suggested Layout
     ------------------
 
