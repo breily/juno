@@ -3,7 +3,7 @@
 --------------
 
 * Juno is a web framework that was designed to make development as fast
-  as possible
+  as possible.
 
 * Homepage: http://brianreily.com/project/juno
 * Repository: http://github.com/breily/juno
@@ -51,8 +51,8 @@ Features
 
 - All normal web framework stuff (models, views, routes, templates)
 - Uses WSGI as a development server, and connects to Nginx/Apache/etc. with SCGI
-- Templating through Jinja2
 - Database access through SQLAlchemy
+- Templating included through Jinja2 and Mako, but Juno can use anything.
 
 
 Install
@@ -67,7 +67,7 @@ Install
 * To get the latest development version, pull from master.  The same steps will
   install it.
 
-* Dependencies: Jinja2, SQLAlchemy, Flup (for SCGI only)
+* Dependencies: SQLAlchemy, Flup (for SCGI only)
 
 Help
 ----
