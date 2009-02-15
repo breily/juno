@@ -50,7 +50,7 @@ Features
 --------
 
 - All normal web framework stuff (models, views, routes, templates)
-- Uses WSGI as a development server, and connects to Nginx/Apache/etc. with SCGI
+- WSGI compliant, with included development server as well as SCGI/FastCGI servers
 - Database access through SQLAlchemy
 - Templating included through Jinja2 and Mako, but Juno can use anything.
 
