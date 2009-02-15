@@ -38,6 +38,7 @@ class Juno(object):
                 # Database options
                 'db_type':        'sqlite',
                 'db_location':    ':memory:',
+                'db_models':      {},
                 # Session options
                 'use_sessions':   True,
                 'session_key':    'junosession',
@@ -435,8 +436,6 @@ class JunoClassConstructor(type):
     def __init__(cls, name, bases, dct):
         super(JunoClassConstructor, cls).__init__(name, bases, dct)
 
-# Map the class name to the class
-models = {}
 # Map SQLAlchemy's types to string versions of them for convenience
 column_mapping = {     'string': String,       'str': String,
                       'integer': Integer,      'int': Integer, 
@@ -484,9 +483,7 @@ def model(model_name, **kwargs):
     mapper(tmp, tmp_table)
     # Add class and functions to global namespace
     global models
-    models[model_name] = tmp
-    globals()['find_' + model_name.lower()] = lambda: find(tmp)
-    globals()[model_name] = tmp
+    config('db_models')[model_name] = tmp
     return tmp
 
 def find(model_cls):
