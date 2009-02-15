@@ -5,3 +5,6 @@
 [ ] Add other URL wildcards ('#' for numbers, '@' for letters)
 [ ] Allow unnamed URL params
 [ ] Allow URL parameters with the same name
+[ ] Add sessions to SCGI/FCGI
+[ ] Fix/test flup servers
+[ ] Make sure internal code uses updated functions (i.e. config())

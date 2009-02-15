@@ -43,6 +43,7 @@ class Juno(object):
                 'db_models':   {},
                 # Session options
                 'use_sessions': True,
+                'session_lib':  'beaker',
                 'session_key':  'junosession',
                 }
         if config is not None: self.config.update(config)
@@ -198,7 +199,7 @@ class JunoRequest(object):
         else: self.user_agent = '?'
         self.combine_request_dicts()
         # Check for sessions
-        if config('use_sessions'):
+        if config('use_sessions') and config('session_lib') == 'beaker':
             self.session = request['beaker.session']
         else:
             self.session = None
@@ -586,7 +587,7 @@ def get_application(process_func):
 def run_dev(addr, port, process_func):
     from wsgiref.simple_server import make_server
     app = get_application(process_func)
-    if config('use_sessions'):
+    if config('use_sessions') and config('session_lib') == 'beaker':
         from beaker.middleware import SessionMiddleware
         app = SessionMiddleware(app, key=config('session_key'))
     print ''
