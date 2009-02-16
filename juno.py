@@ -21,7 +21,9 @@ class Juno(object):
         self.routes = []
         # Set options and merge in user-set options
         self.config = {
-                'log': True,
+                # General settings
+                'log':          True,
+                'content_type': 'text/html',
                 # Server options
                 'mode':     'dev',
                 'scgi_port': 8000,
@@ -266,7 +268,7 @@ class JunoResponse(object):
         self.config = {
             'body': '',
             'status': 200,
-            'headers': { 'Content-Type': 'text/html', },
+            'headers': { 'Content-Type': config('content_type'), },
         }
         if config is None: config = {}
         self.config.update(config)
