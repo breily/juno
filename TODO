@@ -9,3 +9,4 @@
 [ ] Add sessions to documentation
 [ ] Fix/test flup servers
 [ ] Make sure internal code uses updated functions (i.e. config())
+[ ] Decide if '/foo/*:bar/' should match '/foo/'
