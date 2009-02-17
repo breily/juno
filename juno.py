@@ -267,15 +267,15 @@ class JunoResponse(object):
         410: 'Gone',
         500: 'Internal Server Error',
     }
-    def __init__(self, config=None, **kwargs):
+    def __init__(self, config_=None, **kwargs):
         # Set options and merge in user-set options
         self.config = {
             'body': '',
             'status': 200,
             'headers': { 'Content-Type': config('content_type'), },
         }
-        if config is None: config = {}
-        self.config.update(config)
+        if config_ is None: config_ = {}
+        self.config.update(config_)
         self.config.update(kwargs)
         self.config['headers']['Content-Length'] = len(self.config['body'])
     
