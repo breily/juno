@@ -27,8 +27,8 @@
             
             config('template_lib', 'my_template_lib')
 
-        Then you have to give Juno two functions - 'get_template_function' and
-        'render_template_function'.  The first takes a string (most often a
+        Then you have to give Juno two functions - 'get_template_handler' and
+        'render_template_handler'.  The first takes a string (most often a
         filename) and must return an object that can be rendered (i.e. the
         Template objects in Jinja2 and Mako).  The second function takes a 
         template object and a dictionary of keyword arguments (**kwargs).
@@ -43,8 +43,8 @@
             def render_template(template_obj, **kwargs):
                 return template_obj.render(**kwargs)
 
-            config('get_template_function', get_template)
-            config('render_template_function', render_template)
+            config('get_template_handler', get_template)
+            config('render_template_handler', render_template)
 
 
     * Rendering
