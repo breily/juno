@@ -380,8 +380,8 @@ def status(code):
 #   Convenience functions for 404s and redirects
 #
 
-def redirect(url):
-    status(302)
+def redirect(url, code=302):
+    status(code)
     # clear the response headers and add the location header
     _response.config['headers'] = { 'Location': url }
     return _response

@@ -69,6 +69,11 @@
         @route('/')
         def temp(web): redirect('/home/')
 
+    The redirect function takes an optional second argument called code, which
+    defaults to 302:
+        
+        redirect('/', 303)
+
     You can use the assign function instead:
 
         assign('/home/', '/')
