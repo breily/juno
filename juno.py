@@ -27,6 +27,7 @@ class Juno(object):
                 # Server options
                 'mode':     'dev',
                 'scgi_port': 8000,
+                'fcgi_port': 8000,
                 'dev_port':  8000,
                 # Static file handling
                 'use_static':     True,
@@ -81,8 +82,10 @@ class Juno(object):
             run_dev('', self.config['dev_port'], self.request)
         elif mode == 'scgi':
             run_scgi('', self.config['scgi_port'], self.request)
+        elif mode == 'fcgi':
+            run_fcgi('', self.config['scgi_port'], self.request)
         else:
-            print 'error: only scgi and the dev server are supported now'
+            print 'error: only scgi, fcgi and the dev server are supported now'
             print 'exiting juno...'
 
     def request(self, request, method='*', **kwargs):
