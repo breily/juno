@@ -116,7 +116,8 @@ class Juno(object):
             return JunoResponse(body=response).render()
         # No matches - 404
         if self.log: print 'No match, returning 404...\n'
-        return notfound(error='No matching routes registered')
+        notfound(error='No matching routes registered')
+        return _response.render()
 
     def route(self, url, func, method):
         """Attaches a view to a url or list of urls, for a given function. """
