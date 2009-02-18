@@ -435,17 +435,17 @@ def template(template_path, template_dict=None, **kwargs):
     """Append a rendered template to response.  If template_dict is provided,
     it is passed to the render function.  If not, kwargs is."""
     # Retreive a template object.
-    t = config('get_template_function')(template_path)
+    t = config('get_template_handler')(template_path)
     # Render it without arguments.
     if not kwargs and not template_dict: 
-        return append(config('render_template_function')(t))
+        return append(config('render_template_handler')(t))
     # Render the template with a provided template dictionary
     if template_dict: 
-        return append(config('render_template_function')(t, **template_dict))
+        return append(config('render_template_handler')(t, **template_dict))
     # Render the template with **kwargs
-    return append(config('render_template_function')(t, **kwargs))
+    return append(config('render_template_handler')(t, **kwargs))
 
-# The default value of config('get_template_function')
+# The default value of config('get_template_handler')
 def get_template(template_path):
     """Return a template object.  This is defined for the Jinja2 and
     Mako libraries, otherwise you have to override it.  Takes one 
@@ -453,7 +453,7 @@ def get_template(template_path):
     to return an object that will be passed to your rendering function."""
     return _hub.config['template_env'].get_template(template_path)
 
-# The default value of config('render_template_function')
+# The default value of config('render_template_handler')
 def render_template(template_obj, **kwargs):
     """Renders template object with an optional dictionary of values.
     Defined for Jinja2 and Mako - override it if you use another
