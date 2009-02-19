@@ -47,7 +47,7 @@ class Juno(object):
                 'db_location': ':memory:',
                 'db_models':   {},
                 # Session options
-                'use_sessions': True,
+                'use_sessions': False,
                 'session_lib':  'beaker',
                 'session_key':  'junosession',
                 }
