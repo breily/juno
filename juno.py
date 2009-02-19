@@ -13,7 +13,7 @@ import urlparse
 import cgi
 
 class Juno(object):
-    def __init__(self, config=None):
+    def __init__(self, configuration=None):
         """Takes an optional configuration dictionary. """
         if _hub is not None:
             print 'warning: there is already a Juno object created;'
@@ -51,7 +51,7 @@ class Juno(object):
                 'session_lib':  'beaker',
                 'session_key':  'junosession',
                 }
-        if config is not None: self.config.update(config)
+        if configuration is not None: self.config.update(configuration)
         # set up the static file handler
         if self.config['use_static']:
             self.route(self.config['static_url'], self.config['static_handler'], '*')
@@ -267,15 +267,15 @@ class JunoResponse(object):
         410: 'Gone',
         500: 'Internal Server Error',
     }
-    def __init__(self, config_=None, **kwargs):
+    def __init__(self, configuration=None, **kwargs):
         # Set options and merge in user-set options
         self.config = {
             'body': '',
             'status': 200,
             'headers': { 'Content-Type': config('content_type'), },
         }
-        if config_ is None: config_ = {}
-        self.config.update(config_)
+        if configuration is None: configuration = {}
+        self.config.update(configuration)
         self.config.update(kwargs)
         self.config['headers']['Content-Length'] = len(self.config['body'])
     
@@ -318,10 +318,10 @@ class JunoResponse(object):
 
 _hub = None
 
-def init(config=None):
+def init(configuration=None):
     """Set up Juno with an optional configuration."""
     global _hub
-    _hub = _hub if _hub else Juno(config)
+    _hub = _hub if _hub else Juno(configuration)
     return _hub
 
 def config(key, value=None):
