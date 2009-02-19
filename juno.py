@@ -397,13 +397,13 @@ def notfound(error='Unspecified error', file=None):
     """Sets the response to a 404, sets the body to 404_template."""
     status(404)
     file = file if file else config('404_template')
-    template(file, error=error)
+    return template(file, error=error)
 
 def servererror(error='Unspecified error', file=None):
     """Sets the response to a 500, sets the body to 500_template."""
     status(500)
     file = file if file else config('500_template')
-    template(file, error=error)
+    return template(file, error=error)
 
 #
 #   Serve static files.
