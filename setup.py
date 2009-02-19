@@ -30,6 +30,16 @@ except:
     print '** Again, Jinja2 is not required.'
     print ''
 
+try:
+    import beaker
+except:
+    print ''
+    print '** Beaker is used for Juno\'s session management'
+    print '** Download from: http://wiki.pylonshq.com/display/beaker/Home'
+    print '** Or run: `easy_install Beaker`'
+    print '** If you will not be using sessions, you may ignore this message.'
+    print ''
+
 setup(name         = 'juno',
       description  = 'A lightweight Python web framework',
       author       = 'Brian Reily',
