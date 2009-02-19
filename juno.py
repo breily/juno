@@ -107,7 +107,7 @@ class Juno(object):
             try:
                 response = route.dispatch(req_obj)
             except:
-                return servererror(error=str(sys.exc_info()))
+                return servererror(error=str(sys.exc_info())).render()
             # If nothing returned, use the global object
             if response is None: response = _response
             # If we don't have a string, render the Response to one
@@ -116,8 +116,7 @@ class Juno(object):
             return JunoResponse(body=response).render()
         # No matches - 404
         if self.log: print 'No match, returning 404...\n'
-        notfound(error='No matching routes registered')
-        return _response.render()
+        return notfound(error='No matching routes registered').render()
 
     def route(self, url, func, method):
         """Attaches a view to a url or list of urls, for a given function. """
