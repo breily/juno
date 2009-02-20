@@ -106,6 +106,16 @@ Database Options
          (http://www.sqlalchemy.org/docs/05/dbengine.html#create-engine-url-arguments)
          for details.
 
+Custom Middleware
+-----------------
+
+    * 'middleware': []
+      => The list of custom WSGI middleware you want your application to be
+         wrapped in. Each entry in the list should be a tuple in the following
+         format:
+
+         ('package.name.Middleware', {'arg': 'value'})
+
 Session Options
 ---------------
 

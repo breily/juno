@@ -53,6 +53,8 @@ class Juno(object):
                 # Session options
                 'use_sessions': False,
                 'session_lib':  'beaker',
+                # Custom middleware
+                'middleware': []
         }
         if configuration is not None: self.config.update(configuration)
         # set up the static file handler
@@ -651,6 +653,23 @@ def get_application(process_func):
                                                  **environ)
         start_response(status_str, headers)
         return [body]
+
+    middleware_list = config('middleware')
+    application = _load_middleware(application, middleware_list)
+
+    return application
+
+def _load_middleware(application, middleware_list):
+    for middleware, args in middleware_list:
+        parts = middleware.split('.')
+        module = '.'.join(parts[:-1])
+        name = parts[-1]
+        try:
+            obj = getattr(__import__(module, None, None, [name]), name)
+            application = obj(application, **args)
+        except (ImportError, AttributeError):
+            print 'Warning: failed to load middleware %s' % name
+
     return application
 
 def run_dev(addr, port, process_func):
