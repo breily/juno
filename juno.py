@@ -75,9 +75,12 @@ class Juno(object):
 
     def run(self, mode=None):
         """Runs the Juno hub, in the set mode (default now is scgi). """
-        # If a mode is specified, use it. Otherwise use the mode from the config.
-        mode = mode if mode else self.config['mode']
-        self.config['mode'] = mode
+        # If no mode is specified, use the one from the config
+        if mode is None:
+            mode = self.config['mode']
+        # Otherwise store the specified mode
+        else:
+            self.config['mode'] = mode
         if mode == 'dev':
             run_dev('', self.config['dev_port'], self.request)
         elif mode == 'scgi':
@@ -128,8 +131,10 @@ class Juno(object):
         else:
             for u in url: self.routes.append(JunoRoute(u, func, method)) 
 
-    def __getattr__(self, attr): 
-        return self.config[attr] if attr in self.config else None
+    def __getattr__(self, attr):
+        if attr in self.config.keys():
+            return self.config[attr]
+        return None
 
     def __repr__(self): return '<Juno>'
 
@@ -319,16 +324,24 @@ _hub = None
 
 def init(configuration=None):
     """Set up Juno with an optional configuration."""
-    global _hub
-    _hub = _hub if _hub else Juno(configuration)
+    # Only set it up if we haven't already. (Avoids multiple Juno objects)
+    global _hub # Use global keyword here to avoid SyntaxWarning
+    if _hub is None:
+        _hub = Juno(configuration)
     return _hub
 
 def config(key, value=None):
     """Get or set configuration options."""
     if value is None:
+        # Either pass a configuration dictionary
         if type(key) == dict: _hub.config.update(key)
-        else: return _hub.config[key] if key in _hub.config else None
-    else: _hub.config[key] = value    
+        # Or retrieve a value
+        else: 
+            if key in _hub.config.keys(): 
+                return _hub.config[key]
+            return None
+    # Or set a specific value
+    else: _hub.config[key] = value
 
 def run(mode=None):
     """Start Juno, with an optional mode argument."""
@@ -395,13 +408,13 @@ def assign(from_, to):
 def notfound(error='Unspecified error', file=None):
     """Sets the response to a 404, sets the body to 404_template."""
     status(404)
-    file = file if file else config('404_template')
+    if file is None: file = config('404_template')
     return template(file, error=error)
 
 def servererror(error='Unspecified error', file=None):
     """Sets the response to a 500, sets the body to 500_template."""
     status(500)
-    file = file if file else config('500_template')
+    if file is None: file = config('500_template')
     return template(file, error=error)
 
 #

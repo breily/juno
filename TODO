@@ -11,3 +11,6 @@
 [ ] Modify server to automatically reload changed files
 [ ] Create an option to specify a list of middleware to load
     [ ('package.name', 'MiddlewareName', {'arg': 'value'}), ]
+
+[ ] Change model example in README.
+[ ] Convert README to markdown, expand it.
