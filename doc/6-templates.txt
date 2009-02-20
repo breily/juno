@@ -37,14 +37,14 @@
         As an example, here is how Juno sets this up for Jinja2 (Jinja2's
         environment object is stored in config('my_jinja_environ'):
             
-            def get_template(path):
+            def get_template_handler(path):
                 return config('my_jinja_environ').get_template(path)
 
-            def render_template(template_obj, **kwargs):
+            def render_template_handler(template_obj, **kwargs):
                 return template_obj.render(**kwargs)
 
-            config('get_template_handler', get_template)
-            config('render_template_handler', render_template)
+            config('get_template_handler', get_template_handler)
+            config('render_template_handler', render_template_handler)
 
 
     * Rendering
@@ -66,4 +66,16 @@
             autotemplate(['/index/', '/home/'], 'home.html')
     
         Currently, this does not accept any arguments in the url.
+
+    
+    * Template Objects
+    ------------------
+
+        If you want to retrieve a template object without rendering it, you
+        can use the function get_template:
+            
+            template_obj = get_template('index.html')
+
+        Before returning this you would need to render and add it to the 
+        response.
 

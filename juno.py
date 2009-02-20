@@ -37,8 +37,8 @@ class Juno(object):
                 # Template options
                 'use_templates':           True,
                 'template_lib':            'jinja2',
-                'get_template_handler':    get_template,
-                'render_template_handler': render_template,
+                'get_template_handler':    get_template_handler,
+                'render_template_handler': render_template_handler,
                 'template_root':           './templates/',
                 '404_template':            '404.html',
                 '500_template':            '500.html',
@@ -435,26 +435,38 @@ def template(template_path, template_dict=None, **kwargs):
     """Append a rendered template to response.  If template_dict is provided,
     it is passed to the render function.  If not, kwargs is."""
     # Retreive a template object.
-    t = config('get_template_handler')(template_path)
+    t = get_template(template_path)
     # Render it without arguments.
     if not kwargs and not template_dict: 
-        return append(config('render_template_handler')(t))
+        return append(render_template(t))
     # Render the template with a provided template dictionary
     if template_dict: 
-        return append(config('render_template_handler')(t, **template_dict))
+        return append(render_template(t, **template_dict))
     # Render the template with **kwargs
-    return append(config('render_template_handler')(t, **kwargs))
+    return append(render_template(t, **kwargs))
+
+def get_template(template_path):
+    """Returns a template object by calling the default value of
+    'get_template_handler'.  Allows getting a template to be the same
+    regardless of template library."""
+    return config('get_template_handler')(template_path)
 
 # The default value of config('get_template_handler')
-def get_template(template_path):
+def get_template_handler(template_path):
     """Return a template object.  This is defined for the Jinja2 and
     Mako libraries, otherwise you have to override it.  Takes one 
     parameter: a string containing the desired template path.  Needs
     to return an object that will be passed to your rendering function."""
     return _hub.config['template_env'].get_template(template_path)
 
-# The default value of config('render_template_handler')
 def render_template(template_obj, **kwargs):
+    """Renders a template object by using the default value of
+    'render_template_handler'.  Allows rendering a template to be consistent
+    regardless of template library."""
+    return config('render_template_handler')(template_obj, **kwargs)
+
+# The default value of config('render_template_handler')
+def render_template_handler(template_obj, **kwargs):
     """Renders template object with an optional dictionary of values.
     Defined for Jinja2 and Mako - override it if you use another
     library.  Takes a template object as the first parameter, with an
