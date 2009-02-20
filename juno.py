@@ -514,13 +514,10 @@ def model(model_name, **kwargs):
     def add(self): 
         session().add(self)
         return self
-    def commit(self):
-        session().add(self)
-        session().commit()
-        return self
-    def save(self):             # Duplicate of commit() as I plan to erase that
-        session().add(self)
-        session().commit()
+    def save(self):
+        s = session()
+        if self not in s: s.add(self)
+        s.commit()
         return self
     def __repr__(self): 
         return '<%s: id = %s>' %(self.__name__, self.id)
@@ -530,7 +527,7 @@ def model(model_name, **kwargs):
     # Build the class's __dict__
     cls_dict = {'__init__': __init__,
                 'add':      add,
-                'commit':   commit,
+                'save':     save,
                 '__name__': model_name,
                 '__repr__': __repr__,
                 'find':     None,       # Defined later

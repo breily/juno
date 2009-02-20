@@ -1,5 +1,3 @@
-# This example has errors
-
 from juno import *
 
 Person = model('Person', name='str', views='int')
@@ -7,17 +5,14 @@ Person = model('Person', name='str', views='int')
 @route('/makeperson/*:name/')
 def makeperson(web, name):
     exist = Person.find().filter(Person.name==name)
-    if len(exist) != 0:
-        return 'That person already exists'
-    p = Person(name=name, views=0)
-    p.save()
+    if exist.count() != 0: return 'That person already exists'
+    p = Person(name=name, views=0).save()
     return 'Person created'
 
 @route('/getperson/*:name/')
 def getperson(web, name):
     exist = Person.find().filter(Person.name==name).all()
-    if len(exist) == 0:
-        return 'That person does not exist'
+    if len(exist) == 0: return 'That person does not exist'
     p = exist[0]
     p.views += 1
     p.save()

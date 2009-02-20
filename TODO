@@ -4,7 +4,6 @@
 [ ] Add other URL wildcards ('#' for numbers, '@' for letters)
 [ ] Allow unnamed URL params
 [ ] Allow URL parameters with the same name
-[ ] Add sessions to SCGI/FCGI
 [ ] Add sessions to documentation
 [ ] Fix/test flup servers
 [ ] Make sure internal code uses updated functions (i.e. config())
@@ -12,4 +11,3 @@
 [ ] Modify server to automatically reload changed files
 [ ] Create an option to specify a list of middleware to load
     [ ('package.name', 'MiddlewareName', {'arg': 'value'}), ]
-[ ] Fix models example
