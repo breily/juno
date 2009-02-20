@@ -586,14 +586,26 @@ def get_application(process_func):
         environ['QUERY_DICT'] = cgi.parse_qs(environ['QUERY_STRING'],
                                              keep_blank_values=1)
         if environ['REQUEST_METHOD'] == 'POST':
-            # Read from the POST file, skipping read errors or errors formatting
-            # the Content-Length header
-            try:
-                post_data = environ['wsgi.input'].read(int(environ['CONTENT_LENGTH']))
-            except:
-                post_data = ''
-            environ['POST_DICT'] = cgi.parse_qs(post_data,
-                                                keep_blank_values=1)
+            fs = cgi.FieldStorage(fp=environ['wsgi.input'],
+                                  environ=environ,
+                                  keep_blank_values=True)
+
+            post_dict = {}
+            if fs.list:
+                for field in fs.list:
+                    if field.filename:
+                        value = field
+                    else:
+                        value = field.value
+
+                    # Each element of post_dict will be a list, even if it contains only
+                    # one item. This is in line with QUERY_DICT which also works like this.
+                    if not field.name in post_dict:
+                        post_dict[field.name] = [value]
+                    else:
+                        post_dict[field.name].append(value)
+
+            environ['POST_DICT'] = post_dict
         else: environ['POST_DICT'] = {}
         # Done parsing inputs, now reading to send to Juno
         (status_str, headers, body) = process_func(environ['DOCUMENT_URI'],

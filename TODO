@@ -1,4 +1,3 @@
-[ ] Allow/handle form file uploads
 [ ] Add authorization.
 [ ] Write an intro tutorial
 [ ] Add other URL wildcards ('#' for numbers, '@' for letters)
