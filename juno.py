@@ -37,8 +37,8 @@ class Juno(object):
                 # Template options
                 'use_templates':           True,
                 'template_lib':            'jinja2',
-                'get_template_handler':    get_template_handler,
-                'render_template_handler': render_template_handler,
+                'get_template_handler':    _get_template_handler,
+                'render_template_handler': _render_template_handler,
                 'template_root':           './templates/',
                 '404_template':            '404.html',
                 '500_template':            '500.html',
@@ -452,7 +452,7 @@ def get_template(template_path):
     return config('get_template_handler')(template_path)
 
 # The default value of config('get_template_handler')
-def get_template_handler(template_path):
+def _get_template_handler(template_path):
     """Return a template object.  This is defined for the Jinja2 and
     Mako libraries, otherwise you have to override it.  Takes one 
     parameter: a string containing the desired template path.  Needs
@@ -466,7 +466,7 @@ def render_template(template_obj, **kwargs):
     return config('render_template_handler')(template_obj, **kwargs)
 
 # The default value of config('render_template_handler')
-def render_template_handler(template_obj, **kwargs):
+def _render_template_handler(template_obj, **kwargs):
     """Renders template object with an optional dictionary of values.
     Defined for Jinja2 and Mako - override it if you use another
     library.  Takes a template object as the first parameter, with an
