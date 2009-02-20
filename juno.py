@@ -219,9 +219,6 @@ class JunoRequest(object):
             if k in input_dict.keys(): input_dict[k].extend(v)
             # Otherwise just add this key
             else: input_dict[k] = v
-        # Escape each item in the input dict
-        for k, v in input_dict.items():
-            input_dict[k] = [cgi.escape(i) for i in v]
         # Reduce the dict - change one item lists ([a] to a)
         for k, v in input_dict.items(): 
             if len(v) == 1: input_dict[k] = v[0]
