@@ -204,7 +204,7 @@ class JunoRequest(object):
             self.user_agent = request['HTTP_USER_AGENT']
         elif 'User-Agent' in request: 
             self.user_agent = request['User-Agent']
-        else: self.user_agent = '?'
+        else: self.user_agent = ''
         self.combine_request_dicts()
         # Check for sessions
         if config('use_sessions') and config('session_lib') == 'beaker':
