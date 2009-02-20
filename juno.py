@@ -213,7 +213,7 @@ class JunoRequest(object):
             self.session = None
 
     def combine_request_dicts(self):
-        input_dict = self.raw['GET_DICT'].copy()
+        input_dict = self.raw['QUERY_DICT'].copy()
         for k, v in self.raw['POST_DICT'].items():
             # Combine repeated keys
             if k in input_dict.keys(): input_dict[k].extend(v)
@@ -586,10 +586,8 @@ def get_application(process_func):
         else:
             environ['REQUEST_URI'] = environ['DOCUMENT_URI']
         # Parse query string arguments
-        if environ['REQUEST_METHOD'] == 'GET':
-            environ['GET_DICT'] = cgi.parse_qs(environ['QUERY_STRING'], 
-                                               keep_blank_values=1)
-        else: environ['GET_DICT'] = {}
+        environ['QUERY_DICT'] = cgi.parse_qs(environ['QUERY_STRING'],
+                                             keep_blank_values=1)
         if environ['REQUEST_METHOD'] == 'POST':
             # Read from the POST file, skipping read errors or errors formatting
             # the Content-Length header
