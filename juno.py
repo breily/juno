@@ -218,15 +218,12 @@ class JunoRequest(object):
             self.session = None
 
     def combine_request_dicts(self):
-        input_dict = self.raw['GET_DICT'].copy()
+        input_dict = self.raw['QUERY_DICT'].copy()
         for k, v in self.raw['POST_DICT'].items():
             # Combine repeated keys
             if k in input_dict.keys(): input_dict[k].extend(v)
             # Otherwise just add this key
             else: input_dict[k] = v
-        # Escape each item in the input dict
-        for k, v in input_dict.items():
-            input_dict[k] = [cgi.escape(i) for i in v]
         # Reduce the dict - change one item lists ([a] to a)
         for k, v in input_dict.items(): 
             if len(v) == 1: input_dict[k] = v[0]
@@ -599,19 +596,29 @@ def get_application(process_func):
         else:
             environ['REQUEST_URI'] = environ['DOCUMENT_URI']
         # Parse query string arguments
-        if environ['REQUEST_METHOD'] == 'GET':
-            environ['GET_DICT'] = cgi.parse_qs(environ['QUERY_STRING'], 
-                                               keep_blank_values=1)
-        else: environ['GET_DICT'] = {}
+        environ['QUERY_DICT'] = cgi.parse_qs(environ['QUERY_STRING'],
+                                             keep_blank_values=1)
         if environ['REQUEST_METHOD'] == 'POST':
-            # Read from the POST file, skipping read errors or errors formatting
-            # the Content-Length header
-            try:
-                post_data = environ['wsgi.input'].read(int(environ['CONTENT_LENGTH']))
-            except:
-                post_data = ''
-            environ['POST_DICT'] = cgi.parse_qs(post_data,
-                                                keep_blank_values=1)
+            fs = cgi.FieldStorage(fp=environ['wsgi.input'],
+                                  environ=environ,
+                                  keep_blank_values=True)
+
+            post_dict = {}
+            if fs.list:
+                for field in fs.list:
+                    if field.filename:
+                        value = field
+                    else:
+                        value = field.value
+
+                    # Each element of post_dict will be a list, even if it contains only
+                    # one item. This is in line with QUERY_DICT which also works like this.
+                    if not field.name in post_dict:
+                        post_dict[field.name] = [value]
+                    else:
+                        post_dict[field.name].append(value)
+
+            environ['POST_DICT'] = post_dict
         else: environ['POST_DICT'] = {}
         # Done parsing inputs, now reading to send to Juno
         (status_str, headers, body) = process_func(environ['DOCUMENT_URI'],
