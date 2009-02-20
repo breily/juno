@@ -22,7 +22,7 @@
 
         brian.add()         # Adds the object to the current session, but
                             # doesn't commit it.
-        brian.save()        # Adds and commits the object.
+        brian.save()        # Adds (if necessary) and commits the object.
         brian.__repr__()    # Defaults to '<Person: id = X>'
     
 
