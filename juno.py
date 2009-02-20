@@ -630,9 +630,17 @@ def run_dev(addr, port, process_func):
 
 def run_scgi(addr, port, process_func):
     from flup.server.scgi import WSGIServer as SCGI
-    SCGI(get_application(process_func), bindAddress=(addr, port)).run()
+    app = get_application(process_func)
+    if config('use_sessions') and config('session_lib') == 'beaker':
+        from beaker.middleware import SessionMiddleware
+        app = SessionMiddleware(app, key=config('session_key'))
+    SCGI(app, bindAddress=(addr, port)).run()
 
 def run_fcgi(addr, port, process_func):
     from flup.server.fcgi import WSGIServer as FCGI
-    FCGI(get_application(process_func), bindAddress=(addr, port)).run()
+    app = get_application(process_func)
+    if config('use_sessions') and config('session_lib') == 'beaker':
+        from beaker.middleware import SessionMiddleware
+        app = SessionMiddleware(app, key=config('session_key'))
+    FCGI(app, bindAddress=(addr, port)).run()
 
