@@ -531,6 +531,8 @@ def model(model_name, **kwargs):
         return self
     def __repr__(self): 
         return '<%s: id = %s>' %(self.__name__, self.id)
+    def __str__(self):
+        return '<%s: id = %s>' %(self.__name__, self.id)
     # Some static functions for the class
     def find_func(cls):
         return session().query(cls)
@@ -540,6 +542,7 @@ def model(model_name, **kwargs):
                 'save':     save,
                 '__name__': model_name,
                 '__repr__': __repr__,
+                '__str__':  __str__,
                 'find':     None,       # Defined later
                }
     # Parse kwargs to get column definitions
@@ -620,7 +623,7 @@ def get_application(process_func):
 
             environ['POST_DICT'] = post_dict
         else: environ['POST_DICT'] = {}
-        # Done parsing inputs, now reading to send to Juno
+        # Done parsing inputs, now ready to send to Juno
         (status_str, headers, body) = process_func(environ['DOCUMENT_URI'],
                                                    environ['REQUEST_METHOD'],
                                                    **environ)
