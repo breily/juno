@@ -67,7 +67,11 @@ Install
 * To get the latest development version, pull from master.  The same steps will
   install it.
 
-* Dependencies: SQLAlchemy, Flup (for SCGI only)
+* Requires: SQLAlchemy 
+* Optional: 
+    * Jinja2/Mako (for templating)
+    * Flup        (for SCGI/FastCGI only)
+    * Beaker      (for sessions)
 
 Help
 ----
