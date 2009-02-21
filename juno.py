@@ -63,7 +63,10 @@ class Juno(object):
         if self.config['template_lib'] == 'jinja2' and self.config['use_templates']:
             import jinja2
             self.config['template_env'] = jinja2.Environment(
-                loader      = jinja2.FileSystemLoader(self.config['template_root']),
+                loader      = jinja2.FileSystemLoader(
+                                searchpath = self.config['template_root'],
+                                encoding   = self.config['charset']
+                              ),
                 auto_reload = self.config['auto_reload_templates'],
                 **self.config['template_kwargs']
             )
