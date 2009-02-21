@@ -26,5 +26,5 @@
     You can also use the value attribute of the cgi.FieldStorage instance but be aware
     that it reads the file every time you request the value.
 
-        f = web.input('file_field)
+        f = web.input('file_field')
         f.value # => string holding the contents of the file
