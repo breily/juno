@@ -12,4 +12,3 @@
     [ ('package.name', 'MiddlewareName', {'arg': 'value'}), ]
 
 [ ] Change model example in README.
-[ ] Convert README to markdown, expand it.
