@@ -71,9 +71,9 @@ class Juno(object):
             import mako.lookup
             self.config['template_env'] = mako.lookup.TemplateLookup(
                 directories       = [self.config['template_root']],
-                filesystem_checks = self.config['auto_reload_templates'],
                 input_encoding    = self.config['charset'],
                 output_encoding   = self.config['charset'],
+                filesystem_checks = self.config['auto_reload_templates'],
                 **self.config['template_kwargs']
             )
         # set up the database (first part ensures correct slash number for sqlite)
@@ -492,7 +492,7 @@ def _render_template_handler(template_obj, **kwargs):
     library.  Takes a template object as the first parameter, with an
     optional **kwargs parameter.  Needs to return a string."""
     if config('template_lib') == 'mako': return template_obj.render(**kwargs)
-    elif config('template_lib') == 'jinja2':
+    if config('template_lib') == 'jinja2':
         # Jinja needs its output encoded here
         return template_obj.render(**kwargs).encode(config('charset'))
 
