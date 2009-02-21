@@ -23,6 +23,8 @@ class Juno(object):
         self.config = {
                 # General settings
                 'log':          True,
+                # Types and encodings
+                'charset':      'utf-8',
                 'content_type': 'text/html',
                 # Server options
                 'mode':     'dev',
@@ -40,6 +42,7 @@ class Juno(object):
                 'get_template_handler':    _get_template_handler,
                 'render_template_handler': _render_template_handler,
                 'auto_reload_templates':   True,
+                'template_kwargs':         {},
                 'template_root':           './templates/',
                 '404_template':            '404.html',
                 '500_template':            '500.html',
@@ -51,7 +54,7 @@ class Juno(object):
                 'use_sessions': False,
                 'session_lib':  'beaker',
                 'session_key':  'junosession',
-                }
+        }
         if configuration is not None: self.config.update(configuration)
         # set up the static file handler
         if self.config['use_static']:
@@ -60,14 +63,18 @@ class Juno(object):
         if self.config['template_lib'] == 'jinja2' and self.config['use_templates']:
             import jinja2
             self.config['template_env'] = jinja2.Environment(
-                loader=jinja2.FileSystemLoader(self.config['template_root']),
-                auto_reload=self.config['auto_reload_templates']
+                loader      = jinja2.FileSystemLoader(self.config['template_root']),
+                auto_reload = self.config['auto_reload_templates'],
+                **self.config['template_kwargs']
             )
         if self.config['template_lib'] == 'mako' and self.config['use_templates']:
             import mako.lookup
             self.config['template_env'] = mako.lookup.TemplateLookup(
-                directories=[self.config['template_root']],
-                filesystem_checks=self.config['auto_reload_templates']
+                directories       = [self.config['template_root']],
+                filesystem_checks = self.config['auto_reload_templates'],
+                input_encoding    = self.config['charset'],
+                output_encoding   = self.config['charset'],
+                **self.config['template_kwargs']
             )
         # set up the database (first part ensures correct slash number for sqlite)
         if self.config['db_type'] == 'sqlite':
@@ -470,7 +477,7 @@ def _get_template_handler(template_path):
     Mako libraries, otherwise you have to override it.  Takes one 
     parameter: a string containing the desired template path.  Needs
     to return an object that will be passed to your rendering function."""
-    return _hub.config['template_env'].get_template(template_path)
+    return config('template_env').get_template(template_path)
 
 def render_template(template_obj, **kwargs):
     """Renders a template object by using the default value of
@@ -484,7 +491,10 @@ def _render_template_handler(template_obj, **kwargs):
     Defined for Jinja2 and Mako - override it if you use another
     library.  Takes a template object as the first parameter, with an
     optional **kwargs parameter.  Needs to return a string."""
-    return template_obj.render(**kwargs)
+    if config('template_lib') == 'mako': return template_obj.render(**kwargs)
+    elif config('template_lib') == 'jinja2':
+        # Jinja needs its output encoded here
+        return template_obj.render(**kwargs).encode(config('charset'))
 
 def autotemplate(urls, template_path):
     """Automatically renders a template for a given path.  Currently can't
