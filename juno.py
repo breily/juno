@@ -39,6 +39,7 @@ class Juno(object):
                 'template_lib':            'jinja2',
                 'get_template_handler':    _get_template_handler,
                 'render_template_handler': _render_template_handler,
+                'auto_reload_templates':   True,
                 'template_root':           './templates/',
                 '404_template':            '404.html',
                 '500_template':            '500.html',
@@ -59,12 +60,14 @@ class Juno(object):
         if self.config['template_lib'] == 'jinja2' and self.config['use_templates']:
             import jinja2
             self.config['template_env'] = jinja2.Environment(
-                loader=jinja2.FileSystemLoader(self.config['template_root'])
+                loader=jinja2.FileSystemLoader(self.config['template_root']),
+                auto_reload=self.config['auto_reload_templates']
             )
         if self.config['template_lib'] == 'mako' and self.config['use_templates']:
             import mako.lookup
             self.config['template_env'] = mako.lookup.TemplateLookup(
-                directories=[self.config['template_root']]
+                directories=[self.config['template_root']],
+                filesystem_checks=self.config['auto_reload_templates']
             )
         # set up the database (first part ensures correct slash number for sqlite)
         if self.config['db_type'] == 'sqlite':
