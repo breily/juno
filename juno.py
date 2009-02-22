@@ -338,6 +338,7 @@ def init(configuration=None):
 
 def config(key, value=None):
     """Get or set configuration options."""
+    if _hub is None: init()
     if value is None:
         # Either pass a configuration dictionary
         if type(key) == dict: _hub.config.update(key)
