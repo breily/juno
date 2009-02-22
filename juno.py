@@ -53,7 +53,6 @@ class Juno(object):
                 # Session options
                 'use_sessions': False,
                 'session_lib':  'beaker',
-                'session_key':  'junosession',
         }
         if configuration is not None: self.config.update(configuration)
         # set up the static file handler
@@ -652,7 +651,7 @@ def run_dev(addr, port, process_func):
     app = get_application(process_func)
     if config('use_sessions') and config('session_lib') == 'beaker':
         from beaker.middleware import SessionMiddleware
-        app = SessionMiddleware(app, key=config('session_key'))
+        app = SessionMiddleware(app)
     print ''
     print 'running Juno development server, <C-c> to exit...'
     print 'connect to 127.0.0.1:%s to use your app...' %port
@@ -669,7 +668,7 @@ def run_scgi(addr, port, process_func):
     app = get_application(process_func)
     if config('use_sessions') and config('session_lib') == 'beaker':
         from beaker.middleware import SessionMiddleware
-        app = SessionMiddleware(app, key=config('session_key'))
+        app = SessionMiddleware(app)
     SCGI(app, bindAddress=(addr, port)).run()
 
 def run_fcgi(addr, port, process_func):
@@ -677,12 +676,12 @@ def run_fcgi(addr, port, process_func):
     app = get_application(process_func)
     if config('use_sessions') and config('session_lib') == 'beaker':
         from beaker.middleware import SessionMiddleware
-        app = SessionMiddleware(app, key=config('session_key'))
+        app = SessionMiddleware(app)
     FCGI(app, bindAddress=(addr, port)).run()
 
 def run_wsgi(process_func):
     app = get_application(process_func)
     if config('use_sessions') and config('session_lib') == 'beaker':
         from beaker.middleware import SessionMiddleware
-        app = SessionMiddleware(app, key=config('session_key'))
+        app = SessionMiddleware(app)
     return app
