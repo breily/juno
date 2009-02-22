@@ -53,6 +53,9 @@ class Juno(object):
                 # Session options
                 'use_sessions': False,
                 'session_lib':  'beaker',
+                # Debugger
+                'use_debugger': False,
+                'raise_view_exceptions': False,
                 # Custom middleware
                 'middleware': []
         }
@@ -118,10 +121,13 @@ class Juno(object):
             if self.log: print '%s matches, calling %s()...\n' %(
                 route.old_url, route.func.__name__)
             # Get the return from the view    
-            try:
+            if config('raise_view_exceptions') or config('use_debugger'):
                 response = route.dispatch(req_obj)
-            except:
-                return servererror(error=cgi.escape(str(sys.exc_info()))).render()
+            else:
+                try:
+                    response = route.dispatch(req_obj)
+                except:
+                    return servererror(error=cgi.escape(str(sys.exc_info()))).render()
             # If nothing returned, use the global object
             if response is None: response = _response
             # If we don't have a string, render the Response to one
@@ -655,6 +661,8 @@ def get_application(process_func):
         return [body]
 
     middleware_list = []
+    if config('use_debugger'):
+        middleware_list.append(('werkzeug.DebuggedApplication', {'evalex': True}))
     if config('use_sessions') and config('session_lib') == 'beaker':
         middleware_list.append(('beaker.middleware.SessionMiddleware', {}))
     middleware_list.extend(config('middleware'))

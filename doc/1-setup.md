@@ -20,6 +20,8 @@ There are a number of optional dependencies:
   extra configuration.
 * [Flup][flup]: Flup is required if you want to use FastCGI or SCGI.
 * [Beaker][beaker]: Beaker is required if you want to use sessions.
+* [Werkzeug][werkzeug]: Werkzeug is required if you want to use the
+  builtin debugger.
 
 
 Server Configuration
@@ -67,5 +69,6 @@ Those functions will make more sense later.
 [mako]:       http://www.makotemplates.org
 [flup]:       http://trac.saddi.org/flup/
 [beaker]:     http://wiki.pylonshq.com/display/beaker/Home
+[werkzeug]:   http://dev.pocoo.org/projects/werkzeug
 [mod_scgi]:   http://wiki.codemongers.com/NginxNgxSCGIModule
 [mod_wsgi]:   http://code.google.com/p/modwsgi/

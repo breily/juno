@@ -125,5 +125,16 @@ Session Options
     * 'session_lib': 'beaker'
       => The library to use for sessions.  Currently 'beaker' is the only option.
 
+Debugger Options
+----------------
+
+    * 'use_debugger': False
+      => If True, Juno will set up the default debugging middleware.
+
+    * 'raise_view_exceptions': False
+      => If True, uncaught exceptions during a request will be propagated.
+         You'll need to set this to True if you want to use a custom debugging
+         middleware.
+
 
 [dbdocs]: 
