@@ -608,9 +608,12 @@ def get_application(process_func):
             print 'Error: environ=%s' %environ
             sys.exit()
         # Ensure some variable exist (WSGI doesn't guarantee them)
-        if not environ['PATH_INFO']: environ['PATH_INFO'] = '/'
-        if not environ['QUERY_STRING']: environ['QUERY_STRING'] = ''
-        if not environ['CONTENT_LENGTH']: environ['CONTENT_LENGTH'] = '0'
+        if 'PATH_INFO' not in environ.keys() or not environ['PATH_INFO']: 
+            environ['PATH_INFO'] = '/'
+        if 'QUERY_STRING' not in environ.keys() or not environ['QUERY_STRING']: 
+            environ['QUERY_STRING'] = ''
+        if 'CONTENT_LENGTH' not in environ.keys() or not environ['CONTENT_LENGTH']:
+            environ['CONTENT_LENGTH'] = '0'
         # Standardize some header names
         environ['DOCUMENT_URI'] = environ['PATH_INFO']
         if environ['QUERY_STRING']:
