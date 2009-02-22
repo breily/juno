@@ -600,6 +600,9 @@ def find(model_cls):
 
 def get_application(process_func):
     def application(environ, start_response):
+        # This may be temporary - I was getting weird errors where
+        # the `environ` was None.  Seems to have stopped, but I don't
+        # know why.  This message was to clarify what happened.
         if environ is None:
             print 'Error: environ is None for some reason.'
             print 'Error: environ=%s' %environ
