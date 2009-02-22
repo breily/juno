@@ -654,7 +654,10 @@ def get_application(process_func):
         start_response(status_str, headers)
         return [body]
 
-    middleware_list = config('middleware')
+    middleware_list = []
+    if config('use_sessions') and config('session_lib') == 'beaker':
+        middleware_list.append(('beaker.middleware.SessionMiddleware', {}))
+    middleware_list.extend(config('middleware'))
     application = _load_middleware(application, middleware_list)
 
     return application
@@ -675,9 +678,6 @@ def _load_middleware(application, middleware_list):
 def run_dev(addr, port, process_func):
     from wsgiref.simple_server import make_server
     app = get_application(process_func)
-    if config('use_sessions') and config('session_lib') == 'beaker':
-        from beaker.middleware import SessionMiddleware
-        app = SessionMiddleware(app)
     print ''
     print 'running Juno development server, <C-c> to exit...'
     print 'connect to 127.0.0.1:%s to use your app...' %port
@@ -692,25 +692,16 @@ def run_dev(addr, port, process_func):
 def run_scgi(addr, port, process_func):
     from flup.server.scgi_fork import WSGIServer as SCGI
     #app = get_application(process_func)
-    #if config('use_sessions') and config('session_lib') == 'beaker':
-    #    from beaker.middleware import SessionMiddleware
-    #    app = SessionMiddleware(app)
     #SCGI(application=app, bindAddress=(addr, port)).run()
     SCGI(application=get_application(process_func), bindAddress=(addr, port)).run()
 
 def run_fcgi(addr, port, process_func):
     from flup.server.fcgi import WSGIServer as FCGI
     app = get_application(process_func)
-    if config('use_sessions') and config('session_lib') == 'beaker':
-        from beaker.middleware import SessionMiddleware
-        app = SessionMiddleware(app)
     FCGI(app, bindAddress=(addr, port)).run()
 
 def run_wsgi(process_func):
     app = get_application(process_func)
-    if config('use_sessions') and config('session_lib') == 'beaker':
-        from beaker.middleware import SessionMiddleware
-        app = SessionMiddleware(app)
     return app
 
 def debug_print(o): print o
