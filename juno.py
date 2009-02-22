@@ -89,19 +89,16 @@ class Juno(object):
     def run(self, mode=None):
         """Runs the Juno hub, in the set mode (default now is scgi). """
         # If no mode is specified, use the one from the config
-        if mode is None:
-            mode = self.config['mode']
+        if mode is None: mode = self.config['mode']
         # Otherwise store the specified mode
+        else: self.config['mode'] = mode
+        
+        if   mode == 'dev':  run_dev('',  self.config['dev_port'],  self.request)
+        elif mode == 'scgi': run_scgi('', self.config['scgi_port'], self.request)
+        elif mode == 'fcgi': run_fcgi('', self.config['scgi_port'], self.request)
+        elif mode == 'wsgi': return run_wsgi(self.request)
         else:
-            self.config['mode'] = mode
-        if mode == 'dev':
-            run_dev('', self.config['dev_port'], self.request)
-        elif mode == 'scgi':
-            run_scgi('', self.config['scgi_port'], self.request)
-        elif mode == 'fcgi':
-            run_fcgi('', self.config['scgi_port'], self.request)
-        else:
-            print 'error: only scgi, fcgi and the dev server are supported now'
+            print 'error: mode must be scgi, fcgi, wsgi, or dev'
             print 'exiting juno...'
 
     def request(self, request, method='*', **kwargs):
@@ -359,7 +356,7 @@ def run(mode=None):
     if len(sys.argv) > 1:
         if '-mode=' in sys.argv[1]: mode = sys.argv[1].split('=')[1]
         elif '-mode' == sys.argv[1]: mode = sys.argv[2]
-    _hub.run(mode)
+    return _hub.run(mode)
 
 #
 #   Decorators to add routes based on request methods
@@ -423,8 +420,11 @@ def notfound(error='Unspecified error', file=None):
 
 def servererror(error='Unspecified error', file=None):
     """Sets the response to a 500, sets the body to 500_template."""
+    if config('log'): print 'Error: (%s, %s, %s)' % sys.exc_info()
     status(500)
     if file is None: file = config('500_template')
+    # Resets the response, in case the error occurred as we added data to it
+    _response.config['body'] = ''
     return template(file, error=error)
 
 #
@@ -680,3 +680,9 @@ def run_fcgi(addr, port, process_func):
         app = SessionMiddleware(app, key=config('session_key'))
     FCGI(app, bindAddress=(addr, port)).run()
 
+def run_wsgi(process_func):
+    app = get_application(process_func)
+    if config('use_sessions') and config('session_lib') == 'beaker':
+        from beaker.middleware import SessionMiddleware
+        app = SessionMiddleware(app, key=config('session_key'))
+    return app
