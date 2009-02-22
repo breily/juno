@@ -4,9 +4,10 @@
 [ ] Allow unnamed URL params
 [ ] Allow URL parameters with the same name
 [ ] Add sessions to documentation
-[ ] Fix/test flup servers
 [ ] Make sure internal code uses updated functions (i.e. config())
 [ ] Decide if '/foo/*:bar/' should match '/foo/'
 [ ] Modify server to automatically reload changed files
 [ ] Create an option to specify a list of middleware to load
     [ ('package.name', 'MiddlewareName', {'arg': 'value'}), ]
+[ ] Flup servers aren't sending Content-Type header right (i.e. it gets
+    sent but the content is not treated as that)
