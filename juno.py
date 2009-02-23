@@ -98,7 +98,7 @@ class Juno(object):
         elif mode == 'wsgi': 
             self.config['log'] = False
             return run_wsgi(self.request)
-        elif:
+        else:
             print >>sys.stderr, 'error: mode must be scgi, fcgi, wsgi, or dev'
             print >>sys.stderr, 'exiting juno...'
 
