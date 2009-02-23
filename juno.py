@@ -94,7 +94,7 @@ class Juno(object):
         
         if   mode == 'dev':  run_dev('',  self.config['dev_port'],  self.request)
         elif mode == 'scgi': run_scgi('', self.config['scgi_port'], self.request)
-        elif mode == 'fcgi': run_fcgi('', self.config['scgi_port'], self.request)
+        elif mode == 'fcgi': run_fcgi('', self.config['fcgi_port'], self.request)
         elif mode == 'wsgi': return run_wsgi(self.request)
         else:
             print 'error: mode must be scgi, fcgi, wsgi, or dev'
@@ -119,7 +119,7 @@ class Juno(object):
             try:
                 response = route.dispatch(req_obj)
             except:
-                return servererror(error=str(sys.exc_info())).render()
+                return servererror(error=cgi.escape(str(sys.exc_info()))).render()
             # If nothing returned, use the global object
             if response is None: response = _response
             # If we don't have a string, render the Response to one
@@ -610,7 +610,7 @@ def get_application(process_func):
         # Ensure some variable exist (WSGI doesn't guarantee them)
         if 'PATH_INFO' not in environ.keys() or not environ['PATH_INFO']: 
             environ['PATH_INFO'] = '/'
-        if 'QUERY_STRING' not in environ.keys() or not environ['QUERY_STRING']: 
+        if 'QUERY_STRING' not in environ.keys():
             environ['QUERY_STRING'] = ''
         if 'CONTENT_LENGTH' not in environ.keys() or not environ['CONTENT_LENGTH']:
             environ['CONTENT_LENGTH'] = '0'
@@ -646,9 +646,9 @@ def get_application(process_func):
             environ['POST_DICT'] = post_dict
         else: environ['POST_DICT'] = {}
         # Done parsing inputs, now ready to send to Juno
-        (status_str, headers, body) = process_func(environ['DOCUMENT_URI'],
-                                                   environ['REQUEST_METHOD'],
-                                                   **environ)
+        status_str, headers, body = process_func(environ['DOCUMENT_URI'],
+                                                 environ['REQUEST_METHOD'],
+                                                 **environ)
         start_response(status_str, headers)
         return [body]
     return application
@@ -671,12 +671,13 @@ def run_dev(addr, port, process_func):
         srv.socket.close()
 
 def run_scgi(addr, port, process_func):
-    from flup.server.scgi import WSGIServer as SCGI
-    app = get_application(process_func)
-    if config('use_sessions') and config('session_lib') == 'beaker':
-        from beaker.middleware import SessionMiddleware
-        app = SessionMiddleware(app)
-    SCGI(app, bindAddress=(addr, port)).run()
+    from flup.server.scgi_fork import WSGIServer as SCGI
+    #app = get_application(process_func)
+    #if config('use_sessions') and config('session_lib') == 'beaker':
+    #    from beaker.middleware import SessionMiddleware
+    #    app = SessionMiddleware(app)
+    #SCGI(application=app, bindAddress=(addr, port)).run()
+    SCGI(application=get_application(process_func), bindAddress=(addr, port)).run()
 
 def run_fcgi(addr, port, process_func):
     from flup.server.fcgi import WSGIServer as FCGI
@@ -692,3 +693,5 @@ def run_wsgi(process_func):
         from beaker.middleware import SessionMiddleware
         app = SessionMiddleware(app)
     return app
+
+def debug_print(o): print o
