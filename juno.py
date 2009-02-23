@@ -16,8 +16,8 @@ class Juno(object):
     def __init__(self, configuration=None):
         """Takes an optional configuration dictionary. """
         if _hub is not None:
-            print 'warning: there is already a Juno object created;'
-            print '         you might get some weird behavior.'
+            print >>sys.stderr, 'warning: there is already a Juno object created;'
+            print >>sys.stderr, '         you might get some weird behavior.'
         self.routes = []
         # Set options and merge in user-set options
         self.config = {
@@ -96,9 +96,9 @@ class Juno(object):
         elif mode == 'scgi': run_scgi('', self.config['scgi_port'], self.request)
         elif mode == 'fcgi': run_fcgi('', self.config['fcgi_port'], self.request)
         elif mode == 'wsgi': return run_wsgi(self.request)
-        else:
-            print 'error: mode must be scgi, fcgi, wsgi, or dev'
-            print 'exiting juno...'
+        elif self.config['log']:
+            print >>sys.stderr, 'error: mode must be scgi, fcgi, wsgi, or dev'
+            print >>sys.stderr, 'exiting juno...'
 
     def request(self, request, method='*', **kwargs):
         """Called when a request is received.  Routes a url to its view.
@@ -604,8 +604,8 @@ def get_application(process_func):
         # the `environ` was None.  Seems to have stopped, but I don't
         # know why.  This message was to clarify what happened.
         if environ is None:
-            print 'Error: environ is None for some reason.'
-            print 'Error: environ=%s' %environ
+            print >>sys.stderr, 'Error: environ is None for some reason.'
+            print >>sys.stderr, 'Error: environ=%s' %environ
             sys.exit()
         # Ensure some variable exist (WSGI doesn't guarantee them)
         if 'PATH_INFO' not in environ.keys() or not environ['PATH_INFO']: 
