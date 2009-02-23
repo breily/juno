@@ -95,8 +95,10 @@ class Juno(object):
         if   mode == 'dev':  run_dev('',  self.config['dev_port'],  self.request)
         elif mode == 'scgi': run_scgi('', self.config['scgi_port'], self.request)
         elif mode == 'fcgi': run_fcgi('', self.config['fcgi_port'], self.request)
-        elif mode == 'wsgi': return run_wsgi(self.request)
-        elif self.config['log']:
+        elif mode == 'wsgi': 
+            self.config['log'] = False
+            return run_wsgi(self.request)
+        elif:
             print >>sys.stderr, 'error: mode must be scgi, fcgi, wsgi, or dev'
             print >>sys.stderr, 'exiting juno...'
 
