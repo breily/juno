@@ -106,7 +106,7 @@ class Juno(object):
         """Called when a request is received.  Routes a url to its view.
         Returns a 3-tuple (status_string, headers, body) from 
         JunoResponse.render()."""
-        if self.log: print '%s request for %s...' %(method, request)
+        if self.log: print >> sys.stderr, '%s request for %s...' %(method, request)
         req_obj = JunoRequest(kwargs)
         # Set the global response object in case the view wants to use it
         global _response
@@ -115,7 +115,7 @@ class Juno(object):
         if request[-1] != '/': request += '/'
         for route in self.routes:
             if not route.match(request, method): continue
-            if self.log: print '%s matches, calling %s()...\n' %(
+            if self.log: print >> sys.stderr, '%s matches, calling %s()...\n' %(
                 route.old_url, route.func.__name__)
             # Get the return from the view    
             try:
@@ -129,7 +129,7 @@ class Juno(object):
                 return response.render()
             return JunoResponse(body=response).render()
         # No matches - 404
-        if self.log: print 'No match, returning 404...\n'
+        if self.log: print >> sys.stderr, 'No match, returning 404...\n'
         return notfound(error='No matching routes registered').render()
 
     def route(self, url, func, method):
@@ -422,7 +422,7 @@ def notfound(error='Unspecified error', file=None):
 
 def servererror(error='Unspecified error', file=None):
     """Sets the response to a 500, sets the body to 500_template."""
-    if config('log'): print 'Error: (%s, %s, %s)' % sys.exc_info()
+    if config('log'): print >> sys.stderr, 'Error: (%s, %s, %s)' % sys.exc_info()
     status(500)
     if file is None: file = config('500_template')
     # Resets the response, in case the error occurred as we added data to it
