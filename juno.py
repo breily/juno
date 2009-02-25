@@ -15,9 +15,11 @@ import cgi
 class Juno(object):
     def __init__(self, configuration=None):
         """Takes an optional configuration dictionary. """
+        global _hub
         if _hub is not None:
             print >>sys.stderr, 'warning: there is already a Juno object created;'
             print >>sys.stderr, '         you might get some weird behavior.'
+        else: _hub = self
         self.routes = []
         # Set options and merge in user-set options
         self.config = {

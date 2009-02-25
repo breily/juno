@@ -9,10 +9,33 @@ Start out by importing Juno:
 Juno has a number of configuration options that you can set by calling
 init() with a dictionary of settings at the beginning of your application:
     
-    init({'config_opt': 'val', 'other_option': 'val2'})
+    juno.init({'config_opt': 'val', 'other_option': 'val2'})
+
+Juno uses a global object to store all of your settings, but you can also
+create it directly (it will automatically store it as the global object):
+    
+    my_juno_object = juno.Juno({'arg': 'val'})
+
+You can access settings later in a number of ways.  If you created a Juno
+object yourself, you can access them like so:
+    
+    my_juno = juno.Juno({'mode': 'wsgi', 'use_sessions': True})
+    my_juno.config['mode']  # => 'wsgi'
+    my_juno.mode            # => 'wsgi'
+    my_juno.use_sessions    # => True
+
+You can also use the config() function to access settings:
+    
+    juno.init({'template_lib': 'mako'})
+    juno.config('template_lib')  # => 'mako'
+
+And set settings:
+
+    juno.config('log')          # => True
+    juno.config('log', False)
+    juno.config('log')          # => False
 
 A full listing of options:
-    
 
 General Options
 ---------------
