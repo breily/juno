@@ -17,7 +17,7 @@ class Juno(object):
         """Takes an optional configuration dictionary. """
         global _hub
         if _hub is not None:
-            print >>sys.stderr, 'warning: there is already a Juno object created;'
+            print >>sys.stderr, 'Warning: there is already a Juno object created;'
             print >>sys.stderr, '         you might get some weird behavior.'
         else: _hub = self
         self.routes = []
@@ -103,17 +103,18 @@ class Juno(object):
         elif mode == 'scgi': run_scgi('', self.config['scgi_port'], self.request)
         elif mode == 'fcgi': run_fcgi('', self.config['fcgi_port'], self.request)
         elif mode == 'wsgi': 
-            self.config['log'] = False
+            # WSGI doesn't like stdout
+            sys.stdout = sys.stderr
             return run_wsgi(self.request)
         else:
-            print >>sys.stderr, 'error: mode must be scgi, fcgi, wsgi, or dev'
-            print >>sys.stderr, 'exiting juno...'
+            print >>sys.stderr, 'Error: mode must be scgi, fcgi, wsgi, or dev'
+            print >>sys.stderr, '       exiting juno...'
 
     def request(self, request, method='*', **kwargs):
         """Called when a request is received.  Routes a url to its view.
         Returns a 3-tuple (status_string, headers, body) from 
         JunoResponse.render()."""
-        if self.log: print >>sys.stderr, '%s request for %s...' %(method, request)
+        if self.log: print '%s request for %s...' %(method, request)
         req_obj = JunoRequest(kwargs)
         # Set the global response object in case the view wants to use it
         global _response
@@ -122,7 +123,7 @@ class Juno(object):
         if request[-1] != '/': request += '/'
         for route in self.routes:
             if not route.match(request, method): continue
-            if self.log: print >>sys.stderr, '%s matches, calling %s()...\n' %(
+            if self.log: print '%s matches, calling %s()...\n' %(
                 route.old_url, route.func.__name__)
             # Get the return from the view    
             if config('raise_view_exceptions') or config('use_debugger'):
@@ -139,7 +140,7 @@ class Juno(object):
                 return response.render()
             return JunoResponse(body=response).render()
         # No matches - 404
-        if self.log: print >>sys.stderr, 'No match, returning 404...\n'
+        if self.log: 'No match, returning 404...\n'
         return notfound(error='No matching routes registered').render()
 
     def route(self, url, func, method):
