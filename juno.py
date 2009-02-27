@@ -696,7 +696,7 @@ def get_application(process_func):
         # Parse query string arguments
         environ['QUERY_DICT'] = cgi.parse_qs(environ['QUERY_STRING'],
                                              keep_blank_values=1)
-        if environ['REQUEST_METHOD'] == 'POST':
+        if environ['REQUEST_METHOD'] in ('POST', 'PUT'):
             fs = cgi.FieldStorage(fp=environ['wsgi.input'],
                                   environ=environ,
                                   keep_blank_values=True)
