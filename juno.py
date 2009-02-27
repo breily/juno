@@ -55,6 +55,11 @@ class Juno(object):
                 # Session options
                 'use_sessions': False,
                 'session_lib':  'beaker',
+                # Debugger
+                'use_debugger': False,
+                'raise_view_exceptions': False,
+                # Custom middleware
+                'middleware': []
         }
         if configuration is not None: self.config.update(configuration)
         # set up the static file handler
@@ -120,10 +125,13 @@ class Juno(object):
             if self.log: print >>sys.stderr, '%s matches, calling %s()...\n' %(
                 route.old_url, route.func.__name__)
             # Get the return from the view    
-            try:
+            if config('raise_view_exceptions') or config('use_debugger'):
                 response = route.dispatch(req_obj)
-            except:
-                return servererror(error=cgi.escape(str(sys.exc_info()))).render()
+            else:
+                try:
+                    response = route.dispatch(req_obj)
+                except:
+                    return servererror(error=cgi.escape(str(sys.exc_info()))).render()
             # If nothing returned, use the global object
             if response is None: response = _response
             # If we don't have a string, render the Response to one
@@ -655,14 +663,33 @@ def get_application(process_func):
                                                  **environ)
         start_response(status_str, headers)
         return [body]
+
+    middleware_list = []
+    if config('use_debugger'):
+        middleware_list.append(('werkzeug.DebuggedApplication', {'evalex': True}))
+    if config('use_sessions') and config('session_lib') == 'beaker':
+        middleware_list.append(('beaker.middleware.SessionMiddleware', {}))
+    middleware_list.extend(config('middleware'))
+    application = _load_middleware(application, middleware_list)
+
+    return application
+
+def _load_middleware(application, middleware_list):
+    for middleware, args in middleware_list:
+        parts = middleware.split('.')
+        module = '.'.join(parts[:-1])
+        name = parts[-1]
+        try:
+            obj = getattr(__import__(module, None, None, [name]), name)
+            application = obj(application, **args)
+        except (ImportError, AttributeError):
+            print 'Warning: failed to load middleware %s' % name
+
     return application
 
 def run_dev(addr, port, process_func):
     from wsgiref.simple_server import make_server
     app = get_application(process_func)
-    if config('use_sessions') and config('session_lib') == 'beaker':
-        from beaker.middleware import SessionMiddleware
-        app = SessionMiddleware(app)
     print ''
     print 'running Juno development server, <C-c> to exit...'
     print 'connect to 127.0.0.1:%s to use your app...' %port
@@ -677,25 +704,16 @@ def run_dev(addr, port, process_func):
 def run_scgi(addr, port, process_func):
     from flup.server.scgi_fork import WSGIServer as SCGI
     #app = get_application(process_func)
-    #if config('use_sessions') and config('session_lib') == 'beaker':
-    #    from beaker.middleware import SessionMiddleware
-    #    app = SessionMiddleware(app)
     #SCGI(application=app, bindAddress=(addr, port)).run()
     SCGI(application=get_application(process_func), bindAddress=(addr, port)).run()
 
 def run_fcgi(addr, port, process_func):
     from flup.server.fcgi import WSGIServer as FCGI
     app = get_application(process_func)
-    if config('use_sessions') and config('session_lib') == 'beaker':
-        from beaker.middleware import SessionMiddleware
-        app = SessionMiddleware(app)
     FCGI(app, bindAddress=(addr, port)).run()
 
 def run_wsgi(process_func):
     app = get_application(process_func)
-    if config('use_sessions') and config('session_lib') == 'beaker':
-        from beaker.middleware import SessionMiddleware
-        app = SessionMiddleware(app)
     return app
 
 def debug_print(o): print o
