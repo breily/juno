@@ -62,11 +62,20 @@ class Juno(object):
                 'middleware': []
         }
         if configuration is not None: self.config.update(configuration)
-        # set up the static file handler
-        if self.config['use_static']:
-            self.route(self.config['static_url'], self.config['static_handler'], '*')
+        # Set up the static file handler
+        if self.config['use_static']: 
+            self.setup_static()
         # Set up templating
-        if self.config['template_lib'] == 'jinja2' and self.config['use_templates']:
+        if self.config['use_templates']: 
+            self.setup_templates()
+        # Set up the database 
+        self.setup_database()
+
+    def setup_static(self):
+        self.route(self.config['static_url'], self.config['static_handler'], '*')
+
+    def setup_templates(self):
+        if self.config['template_lib'] == 'jinja2':
             import jinja2
             self.config['template_env'] = jinja2.Environment(
                 loader      = jinja2.FileSystemLoader(
@@ -76,7 +85,7 @@ class Juno(object):
                 auto_reload = self.config['auto_reload_templates'],
                 **self.config['template_kwargs']
             )
-        if self.config['template_lib'] == 'mako' and self.config['use_templates']:
+        if self.config['template_lib'] == 'mako':
             import mako.lookup
             self.config['template_env'] = mako.lookup.TemplateLookup(
                 directories       = [self.config['template_root']],
@@ -85,7 +94,9 @@ class Juno(object):
                 filesystem_checks = self.config['auto_reload_templates'],
                 **self.config['template_kwargs']
             )
-        # set up the database (first part ensures correct slash number for sqlite)
+
+    def setup_database(self):
+        # Ensures correct slash number for sqlite
         if self.config['db_type'] == 'sqlite':
             self.config['db_location'] = '/' + self.config['db_location']
         eng_name = self.config['db_type'] + '://' + self.config['db_location']
@@ -95,13 +106,13 @@ class Juno(object):
     def run(self, mode=None):
         """Runs the Juno hub, in the set mode (default now is scgi). """
         # If no mode is specified, use the one from the config
-        if mode is None: mode = self.config['mode']
+        if mode is None: mode = config('mode')
         # Otherwise store the specified mode
-        else: self.config['mode'] = mode
+        else: config('mode', mode)
         
-        if   mode == 'dev':  run_dev('',  self.config['dev_port'],  self.request)
-        elif mode == 'scgi': run_scgi('', self.config['scgi_port'], self.request)
-        elif mode == 'fcgi': run_fcgi('', self.config['fcgi_port'], self.request)
+        if   mode == 'dev':  run_dev('',  config('dev_port'),  self.request)
+        elif mode == 'scgi': run_scgi('', config('scgi_port'), self.request)
+        elif mode == 'fcgi': run_fcgi('', config('fcgi_port'), self.request)
         elif mode == 'wsgi': 
             # WSGI doesn't like stdout
             sys.stdout = sys.stderr
@@ -114,7 +125,7 @@ class Juno(object):
         """Called when a request is received.  Routes a url to its view.
         Returns a 3-tuple (status_string, headers, body) from 
         JunoResponse.render()."""
-        if self.log: print '%s request for %s...' %(method, request)
+        if config('log'): print '%s request for %s...' %(method, request)
         req_obj = JunoRequest(kwargs)
         # Set the global response object in case the view wants to use it
         global _response
@@ -123,7 +134,7 @@ class Juno(object):
         if request[-1] != '/': request += '/'
         for route in self.routes:
             if not route.match(request, method): continue
-            if self.log: print '%s matches, calling %s()...\n' %(
+            if config('log'): print '%s matches, calling %s()...\n' %(
                 route.old_url, route.func.__name__)
             # Get the return from the view    
             if config('raise_view_exceptions') or config('use_debugger'):
@@ -140,7 +151,7 @@ class Juno(object):
                 return response.render()
             return JunoResponse(body=response).render()
         # No matches - 404
-        if self.log: 'No match, returning 404...\n'
+        if config('log'): print 'No matching route, returning 404...\n'
         return notfound(error='No matching routes registered').render()
 
     def route(self, url, func, method):
