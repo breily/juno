@@ -62,6 +62,7 @@ Install
     * [Jinja2][jinja2]/[Mako][mako] (for templating)
     * [Flup][flup]        (for SCGI/FastCGI only)
     * [Beaker][beaker]      (for sessions)
+    * [Werkzeug][werkzeug] (for debugging)
 
 
 Help
@@ -86,3 +87,4 @@ Note
 [mako]:       http://www.makotemplates.org
 [flup]:       http://trac.saddi.org/flup/
 [beaker]:     http://wiki.pylonshq.com/display/beaker/Home
+[werkzeug]:   http://dev.pocoo.org/projects/werkzeug
