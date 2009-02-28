@@ -13,4 +13,4 @@
     plain text)
 [ ] Bug: For a url set like '/:foo/' and '/:foo/bar/', if '/quux/bar/' is
     requested then the first pattern will match, with foo being 'quux/bar'
-    
+    (Same with '/:foo/' and '/bar/:foo/')
