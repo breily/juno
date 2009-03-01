@@ -1,0 +1,21 @@
+
+
+<html>
+    <head>
+    </head>
+    <body>
+        {% if urls %}
+        <ul>
+            {% for url in urls %}
+            <li><a href="{{ url.address }}">{{ url.tiny }}</a></li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        No urls!
+        {% endif %}
+        <form method='post' action='/a/'>
+            <input type='text' name='address' />
+            <input type='submit' />
+        </form>
+    </body>
+</html>
