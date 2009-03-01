@@ -597,6 +597,9 @@ def model(model_name, **kwargs):
             v = v.lower()
             if v in column_mapping: v = column_mapping[v]
             else: raise NameError("'%s' is not an allowed database column" %v)
+            #### TODO: Test this
+            # Default to length of 256
+            #if v == String: v = String(256)
             cols.append(Column(k, v))
     # Create the class    
     tmp = JunoClassConstructor(model_name, (object,), cls_dict)
