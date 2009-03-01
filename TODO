@@ -1,13 +1,23 @@
+Important:
+
 [ ] Add authorization.
-[ ] Write an intro tutorial
+[ ] Write an intro tutorial (in progress)
+[ ] Add sessions to documentation
+
+
+Secondary:
+    
 [ ] Add other URL wildcards ('#' for numbers, '@' for letters)
 [ ] Allow unnamed URL params
 [ ] Allow URL parameters with the same name
-[ ] Add sessions to documentation
 [ ] Make sure internal code uses updated functions (i.e. config())
 [ ] Decide if '/foo/*:bar/' should match '/foo/'
 [ ] Add functionality to dev server to automatically reload changed files (as
     in Werkzeug's run_with_reloader)
+
+
+Bugs:
+    
 [ ] Bug: Flup servers are not sending status/headers correctly - they are simply
     being prepended to the content by Firefox (thus text/html is displayed as
     plain text)
