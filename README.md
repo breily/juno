@@ -64,10 +64,12 @@ Install
     * [Beaker][beaker]      (for sessions)
 
 
-Help
-----
+Help / Contribute
+-----------------
 
 * See the [doc/][docs] directory for the current documentation.
+* More questions? Find bugs? [Email me.][email]
+* Contributions are welcome through Github or by [emailing me a patch][email]
 
 
 Note
@@ -86,3 +88,4 @@ Note
 [mako]:       http://www.makotemplates.org
 [flup]:       http://trac.saddi.org/flup/
 [beaker]:     http://wiki.pylonshq.com/display/beaker/Home
+[email]:      mailto:brian@brianreily.com
