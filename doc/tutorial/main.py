@@ -1,17 +1,24 @@
 import juno
 import httplib, urlparse # For checking URL validity
 
+# Initialize Juno here
+#  - db_location: urls.db => Create an SQLite database called urls.db
+#  - use_debugger: True   => Use the Werkzeug provided debugger
 juno.init({
     'db_location': 'urls.db',
     'use_debugger': True,
     })
 
+# Create a model to store URLs
+#  - Juno stores it under the name 'URL'
+#  - address and tiny will be VARCHAR fields in your database
 URL = juno.model('URL', address='string', tiny='string')
-User = juno.model('User', name='string')
 
-@juno.get('/')
+# Set up our first controller
+#  - This function will be called when you receive any request for '/'
+@juno.route('/')
 def index(web):
-    juno.template('index.html', {'urls': URL.find().all(),})
+    juno.template('index.html', {'urls': URL.find().all()})
 
 @juno.get('/p/:tiny/')
 def preview_url(web, tiny):
