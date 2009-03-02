@@ -68,6 +68,7 @@ Help / Contribute
 -----------------
 
 * See the [doc/][docs] directory for the current documentation.
+* Also, try the [Question and Answer][q&a] page on the [wiki][wiki].
 * More questions? Find bugs? [Email me.][email]
 * Contributions are welcome through Github or by [emailing me a patch][email]
 
@@ -89,3 +90,5 @@ Note
 [flup]:       http://trac.saddi.org/flup/
 [beaker]:     http://wiki.pylonshq.com/display/beaker/Home
 [email]:      mailto:brian@brianreily.com
+[wiki]:       http://wiki.github.com/breily/juno/
+[q&a]:        http://wiki.github.com/breily/juno/questions-and-answers
