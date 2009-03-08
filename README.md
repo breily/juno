@@ -62,6 +62,7 @@ Install
     * [Jinja2][jinja2]/[Mako][mako] (for templating)
     * [Flup][flup]        (for SCGI/FastCGI only)
     * [Beaker][beaker]      (for sessions)
+    * [Werkzeug][werkzeug] (for debugging)
 
 
 Help / Contribute
@@ -92,3 +93,4 @@ Note
 [email]:      mailto:brian@brianreily.com
 [wiki]:       http://wiki.github.com/breily/juno/
 [q&a]:        http://wiki.github.com/breily/juno/questions-and-answers
+[werkzeug]:   http://dev.pocoo.org/projects/werkzeug

@@ -44,7 +44,7 @@ try:
     import werkzeug
 except:
     print ''
-    print '** To use the builtin debugger, Juno require Werkzeug'
+    print '** To use the builtin debugger, Juno requires Werkzeug'
     print '** Download from: http://dev.pocoo.org/projects/werkzeug'
     print '** Or run: `easy_install Werkzeug`'
     print '** If you will not be using the builtin debugger, you may ignore this message.'
