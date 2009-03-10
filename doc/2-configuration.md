@@ -120,6 +120,10 @@ Template Options
 Database Options
 ----------------
 
+    * 'use_db': True
+      => If True, a connection to a database is setup.  Even if this value is False,
+         SQLAlchemy is currently still imported and thus required.
+
     * 'db_type': 'sqlite'
       => The type of database driver to use.  Can be 'sqlite', 'postgres',
          'mysql', 'oracle', or 'mssql'.
