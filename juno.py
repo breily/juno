@@ -49,6 +49,7 @@ class Juno(object):
                 '404_template':            '404.html',
                 '500_template':            '500.html',
                 # Database options
+                'use_db':      True,
                 'db_type':     'sqlite',
                 'db_location': ':memory:',
                 'db_models':   {},
@@ -69,7 +70,8 @@ class Juno(object):
         if self.config['use_templates']: 
             self.setup_templates()
         # Set up the database 
-        self.setup_database()
+        if self.config['use_db']:
+            self.setup_database()
 
     def setup_static(self):
         self.route(self.config['static_url'], self.config['static_handler'], '*')
