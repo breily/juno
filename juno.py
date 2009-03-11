@@ -36,7 +36,7 @@ class Juno(object):
                 # Static file handling
                 'use_static':     True,
                 'static_url':     '/static/*:file/',
-                'static_root':    './static/',
+                'static_root':    os.getcwd() + '/static/',
                 'static_handler': static_serve,
                 # Template options
                 'use_templates':           True,
@@ -45,7 +45,7 @@ class Juno(object):
                 'render_template_handler': _render_template_handler,
                 'auto_reload_templates':   True,
                 'template_kwargs':         {},
-                'template_root':           './templates/',
+                'template_root':           os.getcwd() + '/templates/',
                 '404_template':            '404.html',
                 '500_template':            '500.html',
                 # Database options
@@ -153,7 +153,6 @@ class Juno(object):
                 return response.render()
             return JunoResponse(body=response).render()
         # No matches - 404
-        if config('log'): print 'No matching route, returning 404...\n'
         return notfound(error='No matching routes registered').render()
 
     def route(self, url, func, method):
@@ -440,6 +439,7 @@ def assign(from_, to):
 
 def notfound(error='Unspecified error', file=None):
     """Sets the response to a 404, sets the body to 404_template."""
+    if config('log'): print >>sys.stderr, 'Not Found: %s' % error
     status(404)
     if file is None: file = config('404_template')
     return template(file, error=error)
@@ -459,12 +459,16 @@ def servererror(error='Unspecified error', file=None):
 
 def static_serve(web, file):
     """The default static file serve function. Maps arguments to dir structure."""
-    file = config('static_root') + file
-    if not yield_file(file): notfound("that file could not be found/served")
+    file = os.path.join(config('static_root'), file)
+    realfile = os.path.realpath(file)
+    if not realfile.startswith(config('static_root')):
+        notfound("that file could not be found/served")
+    elif yield_file(file) != 7:
+        notfound("that file could not be found/served")
 
 def yield_file(filename, type=None):
     """Append the content of a file to the response. Guesses file type if not
-    included.  Returns 1 if requested file can' be accessed (often means doesn't 
+    included.  Returns 1 if requested file can't be accessed (often means doesn't 
     exist).  Returns 2 if requested file is a directory.  Returns 7 on success. """
     if not os.access(filename, os.F_OK): return 1
     if os.path.isdir(filename): return 2
@@ -656,7 +660,7 @@ def get_application(process_func):
             fs = cgi.FieldStorage(fp=environ['wsgi.input'],
                                   environ=environ,
                                   keep_blank_values=True)
-
+            
             post_dict = {}
             if fs.list:
                 for field in fs.list:
@@ -664,14 +668,14 @@ def get_application(process_func):
                         value = field
                     else:
                         value = field.value
-
+                    
                     # Each element of post_dict will be a list, even if it contains only
                     # one item. This is in line with QUERY_DICT which also works like this.
                     if not field.name in post_dict:
                         post_dict[field.name] = [value]
                     else:
                         post_dict[field.name].append(value)
-
+            
             environ['POST_DICT'] = post_dict
         else: environ['POST_DICT'] = {}
         # Done parsing inputs, now ready to send to Juno
