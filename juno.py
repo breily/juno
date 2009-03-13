@@ -24,7 +24,8 @@ class Juno(object):
         # Set options and merge in user-set options
         self.config = {
                 # General settings
-                'log':          True,
+                'log':    True,
+                'routes': self.routes,
                 # Types and encodings
                 'charset':      'utf-8',
                 'content_type': 'text/html',
