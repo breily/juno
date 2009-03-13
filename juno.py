@@ -16,6 +16,9 @@ class Juno(object):
             print >>sys.stderr, '         you might get some weird behavior.'
         else: _hub = self
         self.routes = []
+        # Join the path to the app's current location
+        def join_app_path(path):
+            return os.path.join(os.path.abspath(sys.path[0]), path)
         # Set options and merge in user-set options
         self.config = {
                 # General settings
@@ -32,7 +35,7 @@ class Juno(object):
                 # Static file handling
                 'use_static':     True,
                 'static_url':     '/static/*:file/',
-                'static_root':    os.getcwd() + '/static/',
+                'static_root':    join_app_path('static/'),
                 'static_handler': static_serve,
                 # Template options
                 'use_templates':           True,
@@ -41,7 +44,7 @@ class Juno(object):
                 'render_template_handler': _render_template_handler,
                 'auto_reload_templates':   True,
                 'template_kwargs':         {},
-                'template_root':           os.getcwd() + '/templates/',
+                'template_root':           join_app_path('templates/'),
                 '404_template':            '404.html',
                 '500_template':            '500.html',
                 # Database options
