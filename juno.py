@@ -17,8 +17,10 @@ class Juno(object):
         else: _hub = self
         self.routes = []
         # Join the path to the app's current location
+        # In progress
         def join_app_path(path):
-            return os.path.join(os.path.abspath(sys.path[0]), path)
+            #return os.path.join(os.path.abspath(sys.path[0]), path)
+            return './' + path
         # Set options and merge in user-set options
         self.config = {
                 # General settings
