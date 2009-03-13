@@ -104,6 +104,12 @@ Template Options
     * 'auto_reload_templates': True
       => If True, templates are automatically reloaded when they change.
 
+    * 'translations': []
+      => A list of translation objects to be passed to Jinja2's i18n extension.
+         A translation object is one returned by gettext.translation or the
+         equivalent.  If the list is empty, the i18n extension is not enabled.
+         This option only acts on Jinja2 currently.
+
     * 'template_kwargs': {}
       => Allows you to pass custom keyword arguments to the template lookup
          object (Environment for Jinja2, TemplateLookup for Mako).
