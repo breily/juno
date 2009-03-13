@@ -3,11 +3,6 @@ import mimetypes
 import re
 import os
 import sys
-# DB library imports
-from sqlalchemy import (create_engine, Table, MetaData, Column, Integer, String,
-                        Unicode, Text, UnicodeText, Date, Numeric, Time, Float,
-                        DateTime, Interval, Binary, Boolean, PickleType)
-from sqlalchemy.orm import sessionmaker, mapper
 # Server imports
 import urlparse
 import cgi
@@ -99,6 +94,27 @@ class Juno(object):
             )
 
     def setup_database(self):
+        # DB library imports
+        from sqlalchemy import (create_engine, Table, MetaData, Column, Integer, 
+                                String, Unicode, Text, UnicodeText, Date, Numeric, 
+                                Time, Float, DateTime, Interval, Binary, Boolean, 
+                                PickleType)
+        from sqlalchemy.orm import sessionmaker, mapper
+        # Create global name mappings for model()
+        global column_mapping
+        column_mapping = {'string': String,       'str': String,
+                         'integer': Integer,      'int': Integer, 
+                         'unicode': Unicode,     'text': Text,
+                     'unicodetext': UnicodeText, 'date': Date,
+                         'numeric': Numeric,     'time': Time,
+                           'float': Float,   'datetime': DateTime,
+                        'interval': Interval,  'binary': Binary,
+                         'boolean': Boolean,     'bool': Boolean,
+                      'pickletype': PickleType,
+        }
+        # Add a few SQLAlchemy types to globals() so we can use them in models
+        globals().update({'Column': Column, 'Table': Table, 'Integer': Integer,
+                          'MetaData': MetaData, 'mapper': mapper})
         # Ensures correct slash number for sqlite
         if self.config['db_type'] == 'sqlite':
             self.config['db_location'] = '/' + self.config['db_location']
@@ -549,16 +565,7 @@ class JunoClassConstructor(type):
         super(JunoClassConstructor, cls).__init__(name, bases, dct)
 
 # Map SQLAlchemy's types to string versions of them for convenience
-column_mapping = {     'string': String,       'str': String,
-                      'integer': Integer,      'int': Integer, 
-                      'unicode': Unicode,     'text': Text,
-                  'unicodetext': UnicodeText, 'date': Date,
-                      'numeric': Numeric,     'time': Time,
-                        'float': Float,   'datetime': DateTime,
-                     'interval': Interval,  'binary': Binary,
-                      'boolean': Boolean,     'bool': Boolean,
-                   'pickletype': PickleType,
-                 }
+column_mapping = {} # Constructed in Juno.setup_database
 
 session = lambda: config('db_session')
 
