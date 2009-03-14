@@ -11,6 +11,16 @@ In this tutorial you'll create a TinyURL type application and learn:
     * How to use Juno's model API
     * How to run this as a WSGI application
 
+To complete the tutorial you'll need either the [Jinja2][jinja2] or [Mako][mako]
+templating libraries (it is possible to use other template languages with Juno,
+but that is not covered in the tutorial).
+
+You'll also need [SQLAlchemy][sqlalchemy], though you can do most of the tutorial
+without it.
+
+[jinja2]:       http://jinja.pocoo.org/2/
+[mako]:         http://makotemplates.org/
+[sqlalchemy]:   http://sqlalchemy.org/
 
 Installing Juno
 ---------------
