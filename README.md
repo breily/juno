@@ -51,7 +51,11 @@ Features
 Install
 -------
 
-* Start by pulling from [Github][repo], and then do:
+* You can use easy_install:
+    
+        easy_install Juno
+
+* Or pull from [Github][repo], and then do:
 
         $ python setup.py install   # As root
         $ python
