@@ -2,20 +2,48 @@
 
 <html>
     <head>
+        <style type="text/css">
+            html      { margin: 0 auto;
+                        background-color: #FFFFFF;
+                      }
+            #make_new { width: 50%;
+                        margin-top: 100px;
+                        margin-left: 25%;
+                        text-align: center;
+                        background-color: #B00000;
+                        border: 5px solid #400000;
+                      }
+            #url      { height: 30px;
+                        border: 2px solid #400000;
+                      }
+            #submit   { height: 25px;
+                        width: 75px;
+                        border: 2px solid #400000;
+                      }  
+            #examples { padding-top: 25px;
+                        text-align: center;
+                      }
+        </style>
     </head>
     <body>
-        {% if urls %}
-        <ul>
-            {% for url in urls %}
-            <li><a href="{{ url.address }}">{{ url.tiny }}</a></li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        No urls!
-        {% endif %}
-        <form method='post' action='/a/'>
-            <input type='text' name='address' />
-            <input type='submit' />
-        </form>
+        <div id="make_new">
+            <form method='post' action='/a/'>
+                <p>
+                    <input type='text' name='url' id='url' size='80' />
+                </p>
+                <p>
+                    <input type='submit' value='Shorten' id='submit' />
+                </p>
+            </form>
+        </div>
+        <div id="examples">
+            {% if urls %}
+            <ul>
+                {% for url in urls %}
+                <li><a href="{{ url.full_address }}">{{ url.tiny_address }}</a></li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
     </body>
 </html>

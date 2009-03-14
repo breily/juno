@@ -1,0 +1,29 @@
+<html>
+    <head>
+        <style type="text/css">
+            html      { margin: 0 auto;
+                        background-color: #FFFFFF;
+                      }
+            #preview  { width: 50%;
+                        margin-top: 50px;
+                        padding-top: 30px;
+                        padding-bottom: 30px;
+                        margin-left: 25%;
+                        text-align: center;
+                        background-color: #B00000;
+                        border: 5px solid #400000;
+                        font-size: 28px;
+                      }
+            a         { text-decoration: none;
+                        color: #000000;
+                      }
+        </style>
+    </head>
+    <body>
+        <div id="preview">
+            <a href="{{ url.full_address }}">
+                {{ url.tiny_address }} = {{ url.full_address }}
+            </a>
+        </div>
+    </body>
+</html>
