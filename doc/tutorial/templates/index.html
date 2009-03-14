@@ -36,14 +36,5 @@
                 </p>
             </form>
         </div>
-        <div id="examples">
-            {% if urls %}
-            <ul>
-                {% for url in urls %}
-                <li><a href="{{ url.full_address }}">{{ url.tiny_address }}</a></li>
-                {% endfor %}
-            </ul>
-            {% endif %}
-        </div>
     </body>
 </html>

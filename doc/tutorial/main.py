@@ -18,19 +18,23 @@ URL = juno.model('URL', full_address='string', tiny_address='string')
 @juno.route('/')
 def index(web):
     # Render our main template
-    juno.template('index.html', {'urls': URL.find().all()})
+    juno.template('index.html')
 
 # Set up our preview controller
 #  - Displays the actual URL for the 'tiny' version
 @juno.get('/p/:tiny/')
 def preview_url(web, tiny):
+    # Special command to list all URLs
+    # We could put this in a separate view if we wanted
+    if tiny == 'all':
+        return juno.template('preview.html', {'url_list': URL.find().all()})
     # Search the database to find the corresponding URL
     try:
         url = URL.find().filter(URL.tiny_address == tiny).one()
         juno.template('preview.html', {'url': url})
     # If it's not there, use our 404 page
     except:
-        juno.notfound('preview url not found')
+        juno.notfound("That preview URL doesn't exist!")
 
 # Set up a handler to add URLs
 @juno.route('/a/')
@@ -58,7 +62,7 @@ def add_url_post(web):
     URL(full_address=addr, tiny_address=tiny).save()
 
     # And show us the preview
-    return juno.redirect('/p/%s/' % tiny)
+    juno.redirect('/p/%s/' % tiny)
 
 # Set up our redirecter
 #  - We get the short version in our variable 'tiny'
@@ -70,6 +74,6 @@ def get_url(web, tiny):
         # Redirects the user to the found address
         juno.redirect(url.full_address)
     except:
-        juno.notfound("That url does not exist")
+        juno.notfound("That URL doesn't exist")
 
 if __name__ == '__main__': juno.run()
