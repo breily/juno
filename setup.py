@@ -55,11 +55,20 @@ except:
     print '** If you\'re not going to use the debugger, ignore this message.'
     print ''
 
-setup(name         = 'juno',
+setup(name         = 'Juno',
       description  = 'A lightweight Python web framework',
       author       = 'Brian Reily',
       author_email = 'brian@brianreily.com',
       url          = 'http://brianreily.com/project/juno/',
       version      = '0.1',
       py_modules   = ['juno'],
+      classifiers  = [
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python',
+        'Topic :: Internet :: WWW/HTTP',
+        'Topic :: Internet :: WWW/HTTP :: WSGI',
+        'Topic :: Software Development :: Libraries :: Application Frameworks',
+      ],
      )
