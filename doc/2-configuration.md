@@ -57,8 +57,9 @@ Server Options
 
     * 'mode': 'dev'
       => Controls which interface Juno runs - 'dev' runs the development server,
-         'scgi' runs the SCGI server, 'fcgi' runs the FastCGI server, and 'wsgi'
-         allows you to retrieve an application() object for mod_wsgi.
+         'scgi' runs the SCGI server, 'fcgi' runs the FastCGI server, 'wsgi'
+         allows you to retrieve an application() object for mod_wsgi, and
+         'appengine' will run using Google App Engine's run_wsgi_app.
 
     * 'scgi_port': 8000
       => The port where the SCGI server runs.
