@@ -60,7 +60,7 @@ setup(name         = 'Juno',
       author       = 'Brian Reily',
       author_email = 'brian@brianreily.com',
       url          = 'http://brianreily.com/project/juno/',
-      version      = '0.1',
+      version      = '0.1.1',
       py_modules   = ['juno'],
       classifiers  = [
         'Development Status :: 4 - Beta',
