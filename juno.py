@@ -146,13 +146,8 @@ class Juno(object):
         if   mode == 'dev':  run_dev('',  config('dev_port'),  self.request)
         elif mode == 'scgi': run_scgi('', config('scgi_port'), self.request)
         elif mode == 'fcgi': run_fcgi('', config('fcgi_port'), self.request)
-        elif mode == 'wsgi': 
-            # WSGI doesn't like stdout
-            sys.stdout = sys.stderr
-            return run_wsgi(self.request)
-        elif mode == 'appengine': 
-            sys.stdout = sys.stderr
-            run_appengine(self.request)
+        elif mode == 'wsgi': return run_wsgi(self.request)
+        elif mode == 'appengine': run_appengine(self.request)
         else:
             print >>sys.stderr, 'Error: unrecognized mode'
             print >>sys.stderr, '       exiting juno...'
@@ -757,8 +752,10 @@ def run_fcgi(addr, port, process_func):
     FCGI(app, bindAddress=(addr, port)).run()
 
 def run_wsgi(process_func):
+    sys.stdout = sys.stderr
     return get_application(process_func)
 
 def run_appengine(process_func):
+    sys.stdout = sys.stderr
     from google.appengine.ext.webapp.util import run_wsgi_app
     run_wsgi_app(get_application(process_func))
