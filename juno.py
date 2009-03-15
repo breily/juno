@@ -727,7 +727,6 @@ def _load_middleware(application, middleware_list):
             application = obj(application, **args)
         except (ImportError, AttributeError):
             print 'Warning: failed to load middleware %s' % name
-
     return application
 
 def run_dev(addr, port, process_func):
@@ -746,9 +745,8 @@ def run_dev(addr, port, process_func):
 
 def run_scgi(addr, port, process_func):
     from flup.server.scgi_fork import WSGIServer as SCGI
-    #app = get_application(process_func)
-    #SCGI(application=app, bindAddress=(addr, port)).run()
-    SCGI(application=get_application(process_func), bindAddress=(addr, port)).run()
+    app = get_application(process_func)
+    SCGI(application=app, bindAddress=(addr, port)).run()
 
 def run_fcgi(addr, port, process_func):
     from flup.server.fcgi import WSGIServer as FCGI
@@ -756,7 +754,4 @@ def run_fcgi(addr, port, process_func):
     FCGI(app, bindAddress=(addr, port)).run()
 
 def run_wsgi(process_func):
-    app = get_application(process_func)
-    return app
-
-def debug_print(o): print o
+    return get_application(process_func)
