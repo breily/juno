@@ -16,16 +16,14 @@ class Juno(object):
             print >>sys.stderr, '         you might get some weird behavior.'
         else: _hub = self
         self.routes = []
-        # Join the path to the app's current location
-        # In progress
-        def join_app_path(path):
-            #return os.path.join(os.path.abspath(sys.path[0]), path)
-            return './' + path
+        # Find the directory of the user's app, so we can setup static/template_roots
+        self.find_user_path()
         # Set options and merge in user-set options
         self.config = {
-                # General settings
+                # General settings / meta information
                 'log':    True,
                 'routes': self.routes,
+                'self':   self,
                 # Types and encodings
                 'charset':      'utf-8',
                 'content_type': 'text/html',
@@ -37,7 +35,7 @@ class Juno(object):
                 # Static file handling
                 'use_static':     True,
                 'static_url':     '/static/*:file/',
-                'static_root':    join_app_path('static/'),
+                'static_root':    os.path.join(self.app_path, 'static/'),
                 'static_handler': static_serve,
                 # Template options
                 'use_templates':           True,
@@ -47,7 +45,7 @@ class Juno(object):
                 'auto_reload_templates':   True,
                 'translations':            [], 
                 'template_kwargs':         {},
-                'template_root':           join_app_path('templates/'),
+                'template_root':           os.path.join(self.app_path, 'templates/'),
                 '404_template':            '404.html',
                 '500_template':            '500.html',
                 # Database options
@@ -74,6 +72,31 @@ class Juno(object):
         # Set up the database 
         if self.config['use_db']:
             self.setup_database()
+
+    def find_user_path(self):
+        # This section may look strange, but it seems like the only solution.
+        # Basically, we need the directory of the user's app in order to setup
+        # the static/template_roots.  When we run under mod_wsgi, we can't use
+        # either os.getcwd() or sys.path[0].  This code generates an exception,
+        # then goes up to the top stack frame (the user's code), and finds
+        # the location of that.
+        try:
+            raise NameError
+        except:
+            traceback = sys.exc_info()[2]
+            if traceback is None:
+                print >>sys.stderr, 'Warning: Failed to find current working directory.'
+                print >>sys.stderr, '         Default static_root and template_root'
+                print >>sys.stderr, '         values may not work correctly.'
+                filename = './'
+            else:
+                frame = traceback.tb_frame
+                while traceback is not None:
+                    if frame.f_back is None:
+                        break
+                    frame = frame.f_back
+                filename = frame.f_code.co_filename
+        self.app_path = os.path.abspath(os.path.dirname(filename))
 
     def setup_static(self):
         self.route(self.config['static_url'], self.config['static_handler'], '*')
