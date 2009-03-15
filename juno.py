@@ -137,7 +137,7 @@ class Juno(object):
         self.config['db_session'] = sessionmaker(bind=self.config['db_engine'])()
 
     def run(self, mode=None):
-        """Runs the Juno hub, in the set mode (default now is scgi). """
+        """Runs the Juno hub, in the set mode (default now is dev). """
         # If no mode is specified, use the one from the config
         if mode is None: mode = config('mode')
         # Otherwise store the specified mode
@@ -150,8 +150,11 @@ class Juno(object):
             # WSGI doesn't like stdout
             sys.stdout = sys.stderr
             return run_wsgi(self.request)
+        elif mode == 'appengine': 
+            sys.stdout = sys.stderr
+            run_appengine(self.request)
         else:
-            print >>sys.stderr, 'Error: mode must be scgi, fcgi, wsgi, or dev'
+            print >>sys.stderr, 'Error: unrecognized mode'
             print >>sys.stderr, '       exiting juno...'
 
     def request(self, request, method='*', **kwargs):
@@ -755,3 +758,7 @@ def run_fcgi(addr, port, process_func):
 
 def run_wsgi(process_func):
     return get_application(process_func)
+
+def run_appengine(process_func):
+    from google.appengine.ext.webapp.util import run_wsgi_app
+    run_wsgi_app(get_application(process_func))
