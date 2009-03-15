@@ -81,7 +81,7 @@ class Juno(object):
         # then goes up to the top stack frame (the user's code), and finds
         # the location of that.
         try:
-            raise NameError
+            raise Exception
         except:
             traceback = sys.exc_info()[2]
             if traceback is None:
