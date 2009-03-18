@@ -14,7 +14,7 @@ Table of Contents:
 
 [setup]:            1-setup.html
 [config]:           2-configuration.html
-[request_response]: 3-request_response.html
+[request_response]: 3-requests_and_responses.html
 [routes]:           4-routes.html
 [models]:           5-models.html
 [templates]:        6-templates.html
