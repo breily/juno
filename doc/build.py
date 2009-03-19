@@ -8,5 +8,5 @@ for f in glob.glob('*.md') + glob.glob('*.txt'):
   print base
   markdown.markdownFromFile(f, base+'.html')
   
-if sys.platform=='darwin':
-  os.system("open %s/0-table_of_contents.html" % dir)
+#if sys.platform=='darwin':
+#  os.system("open /0-table_of_contents.html" % dir)
