@@ -1,4 +1,4 @@
-# # # #
+# # # # # # # #
 #
 # When adding features, add some tests for it too.
 # Tests are set up so you call a Juno app's URL, it
@@ -9,7 +9,11 @@
 #
 # See existing tests.
 #
-# # # #
+# # # # # # # #
+
+""" ---------------------- """
+""" Start Application Code """
+""" ---------------------- """
 
 import juno
 
@@ -42,6 +46,7 @@ from client import Client
 client = Client(application)
 
 class ResponseTest(unittest.TestCase):
+    """Test basic responses - status codes, headers, bodies. """
     def test200StatusCode(self): 
         """Juno should send a 200 by default"""
         status, _, _ = client.request('/1/')
@@ -56,6 +61,7 @@ class ResponseTest(unittest.TestCase):
         self.assertEqual(status, '500 Internal Server Error')
 
 class QueryStringTest(unittest.TestCase):
+    """Test Juno's handling of query strings. """
     def testQueryStringHeader(self):
         """Juno can read query string and echo it back""" 
         _, _, body = client.request('/4/', QUERY_STRING='a=5&b=0')
