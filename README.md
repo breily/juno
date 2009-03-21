@@ -51,7 +51,11 @@ Features
 Install
 -------
 
-* Start by pulling from [Github][repo], and then do:
+* You can use easy_install:
+    
+        easy_install Juno
+
+* Or pull from [Github][repo], and then do:
 
         $ python setup.py install   # As root
         $ python
@@ -62,12 +66,15 @@ Install
     * [Jinja2][jinja2]/[Mako][mako] (for templating)
     * [Flup][flup]        (for SCGI/FastCGI only)
     * [Beaker][beaker]      (for sessions)
+    * [Werkzeug][werkzeug] (for debugging)
 
 
-Help
-----
+Help / Contribute
+-----------------
 
 * See the [doc/][docs] directory for the current documentation.
+* More questions? Find bugs? [Check out the new Google group][list].
+* Contributions are welcome through Github or by [emailing me a patch][email].
 
 
 Note
@@ -86,3 +93,8 @@ Note
 [mako]:       http://www.makotemplates.org
 [flup]:       http://trac.saddi.org/flup/
 [beaker]:     http://wiki.pylonshq.com/display/beaker/Home
+[list]:       http://groups.google.com/group/juno-framework
+[email]:      mailto:brian@brianreily.com
+[wiki]:       http://wiki.github.com/breily/juno/
+[q&a]:        http://wiki.github.com/breily/juno/questions-and-answers
+[werkzeug]:   http://dev.pocoo.org/projects/werkzeug

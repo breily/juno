@@ -57,8 +57,9 @@ Server Options
 
     * 'mode': 'dev'
       => Controls which interface Juno runs - 'dev' runs the development server,
-         'scgi' runs the SCGI server, 'fcgi' runs the FastCGI server, and 'wsgi'
-         allows you to retrieve an application() object for mod_wsgi.
+         'scgi' runs the SCGI server, 'fcgi' runs the FastCGI server, 'wsgi'
+         allows you to retrieve an application() object for mod_wsgi, and
+         'appengine' will run using Google App Engine's run_wsgi_app.
 
     * 'scgi_port': 8000
       => The port where the SCGI server runs.
@@ -104,6 +105,12 @@ Template Options
     * 'auto_reload_templates': True
       => If True, templates are automatically reloaded when they change.
 
+    * 'translations': []
+      => A list of translation objects to be passed to Jinja2's i18n extension.
+         A translation object is one returned by gettext.translation or the
+         equivalent.  If the list is empty, the i18n extension is not enabled.
+         This option only acts on Jinja2 currently.
+
     * 'template_kwargs': {}
       => Allows you to pass custom keyword arguments to the template lookup
          object (Environment for Jinja2, TemplateLookup for Mako).
@@ -119,6 +126,10 @@ Template Options
 
 Database Options
 ----------------
+
+    * 'use_db': True
+      => If True, a connection to a database is setup.  Even if this value is False,
+         SQLAlchemy is currently still imported and thus required.
 
     * 'db_type': 'sqlite'
       => The type of database driver to use.  Can be 'sqlite', 'postgres',

@@ -3,11 +3,6 @@ import mimetypes
 import re
 import os
 import sys
-# DB library imports
-from sqlalchemy import (create_engine, Table, MetaData, Column, Integer, String,
-                        Unicode, Text, UnicodeText, Date, Numeric, Time, Float,
-                        DateTime, Interval, Binary, Boolean, PickleType)
-from sqlalchemy.orm import sessionmaker, mapper
 # Server imports
 import urlparse
 import cgi
@@ -21,10 +16,14 @@ class Juno(object):
             print >>sys.stderr, '         you might get some weird behavior.'
         else: _hub = self
         self.routes = []
+        # Find the directory of the user's app, so we can setup static/template_roots
+        self.find_user_path()
         # Set options and merge in user-set options
         self.config = {
-                # General settings
-                'log':          True,
+                # General settings / meta information
+                'log':    True,
+                'routes': self.routes,
+                'self':   self,
                 # Types and encodings
                 'charset':      'utf-8',
                 'content_type': 'text/html',
@@ -36,7 +35,7 @@ class Juno(object):
                 # Static file handling
                 'use_static':     True,
                 'static_url':     '/static/*:file/',
-                'static_root':    './static/',
+                'static_root':    os.path.join(self.app_path, 'static/'),
                 'static_handler': static_serve,
                 # Template options
                 'use_templates':           True,
@@ -44,11 +43,13 @@ class Juno(object):
                 'get_template_handler':    _get_template_handler,
                 'render_template_handler': _render_template_handler,
                 'auto_reload_templates':   True,
+                'translations':            [], 
                 'template_kwargs':         {},
-                'template_root':           './templates/',
+                'template_root':           os.path.join(self.app_path, 'templates/'),
                 '404_template':            '404.html',
                 '500_template':            '500.html',
                 # Database options
+                'use_db':      True,
                 'db_type':     'sqlite',
                 'db_location': ':memory:',
                 'db_models':   {},
@@ -69,7 +70,33 @@ class Juno(object):
         if self.config['use_templates']: 
             self.setup_templates()
         # Set up the database 
-        self.setup_database()
+        if self.config['use_db']:
+            self.setup_database()
+
+    def find_user_path(self):
+        # This section may look strange, but it seems like the only solution.
+        # Basically, we need the directory of the user's app in order to setup
+        # the static/template_roots.  When we run under mod_wsgi, we can't use
+        # either os.getcwd() or sys.path[0].  This code generates an exception,
+        # then goes up to the top stack frame (the user's code), and finds
+        # the location of that.
+        try:
+            raise Exception
+        except:
+            traceback = sys.exc_info()[2]
+            if traceback is None:
+                print >>sys.stderr, 'Warning: Failed to find current working directory.'
+                print >>sys.stderr, '         Default static_root and template_root'
+                print >>sys.stderr, '         values may not work correctly.'
+                filename = './'
+            else:
+                frame = traceback.tb_frame
+                while traceback is not None:
+                    if frame.f_back is None:
+                        break
+                    frame = frame.f_back
+                filename = frame.f_code.co_filename
+        self.app_path = os.path.abspath(os.path.dirname(filename))
 
     def setup_static(self):
         self.route(self.config['static_url'], self.config['static_handler'], '*')
@@ -77,14 +104,22 @@ class Juno(object):
     def setup_templates(self):
         if self.config['template_lib'] == 'jinja2':
             import jinja2
+            # If the user specified translation objects, load i18n extension
+            if len(self.config['translations']) != 0:
+                extensions = ['jinja2.ext.i18n']
+            else:
+                extensions = ()
             self.config['template_env'] = jinja2.Environment(
                 loader      = jinja2.FileSystemLoader(
                                 searchpath = self.config['template_root'],
-                                encoding   = self.config['charset']
+                                encoding   = self.config['charset'],
                               ),
                 auto_reload = self.config['auto_reload_templates'],
+                extensions = extensions,
                 **self.config['template_kwargs']
             )
+            for translation in self.config['translations']:
+                self.config['template_env'].install_gettext_translations(translation)
         if self.config['template_lib'] == 'mako':
             import mako.lookup
             self.config['template_env'] = mako.lookup.TemplateLookup(
@@ -96,6 +131,27 @@ class Juno(object):
             )
 
     def setup_database(self):
+        # DB library imports
+        from sqlalchemy import (create_engine, Table, MetaData, Column, Integer, 
+                                String, Unicode, Text, UnicodeText, Date, Numeric, 
+                                Time, Float, DateTime, Interval, Binary, Boolean, 
+                                PickleType)
+        from sqlalchemy.orm import sessionmaker, mapper
+        # Create global name mappings for model()
+        global column_mapping
+        column_mapping = {'string': String,       'str': String,
+                         'integer': Integer,      'int': Integer, 
+                         'unicode': Unicode,     'text': Text,
+                     'unicodetext': UnicodeText, 'date': Date,
+                         'numeric': Numeric,     'time': Time,
+                           'float': Float,   'datetime': DateTime,
+                        'interval': Interval,  'binary': Binary,
+                         'boolean': Boolean,     'bool': Boolean,
+                      'pickletype': PickleType,
+        }
+        # Add a few SQLAlchemy types to globals() so we can use them in models
+        globals().update({'Column': Column, 'Table': Table, 'Integer': Integer,
+                          'MetaData': MetaData, 'mapper': mapper})
         # Ensures correct slash number for sqlite
         if self.config['db_type'] == 'sqlite':
             self.config['db_location'] = '/' + self.config['db_location']
@@ -104,7 +160,7 @@ class Juno(object):
         self.config['db_session'] = sessionmaker(bind=self.config['db_engine'])()
 
     def run(self, mode=None):
-        """Runs the Juno hub, in the set mode (default now is scgi). """
+        """Runs the Juno hub, in the set mode (default now is dev). """
         # If no mode is specified, use the one from the config
         if mode is None: mode = config('mode')
         # Otherwise store the specified mode
@@ -113,12 +169,10 @@ class Juno(object):
         if   mode == 'dev':  run_dev('',  config('dev_port'),  self.request)
         elif mode == 'scgi': run_scgi('', config('scgi_port'), self.request)
         elif mode == 'fcgi': run_fcgi('', config('fcgi_port'), self.request)
-        elif mode == 'wsgi': 
-            # WSGI doesn't like stdout
-            sys.stdout = sys.stderr
-            return run_wsgi(self.request)
+        elif mode == 'wsgi': return run_wsgi(self.request)
+        elif mode == 'appengine': run_appengine(self.request)
         else:
-            print >>sys.stderr, 'Error: mode must be scgi, fcgi, wsgi, or dev'
+            print >>sys.stderr, 'Error: unrecognized mode'
             print >>sys.stderr, '       exiting juno...'
 
     def request(self, request, method='*', **kwargs):
@@ -151,7 +205,6 @@ class Juno(object):
                 return response.render()
             return JunoResponse(body=response).render()
         # No matches - 404
-        if config('log'): print 'No matching route, returning 404...\n'
         return notfound(error='No matching routes registered').render()
 
     def route(self, url, func, method):
@@ -438,6 +491,7 @@ def assign(from_, to):
 
 def notfound(error='Unspecified error', file=None):
     """Sets the response to a 404, sets the body to 404_template."""
+    if config('log'): print >>sys.stderr, 'Not Found: %s' % error
     status(404)
     if file is None: file = config('404_template')
     return template(file, error=error)
@@ -457,12 +511,16 @@ def servererror(error='Unspecified error', file=None):
 
 def static_serve(web, file):
     """The default static file serve function. Maps arguments to dir structure."""
-    file = config('static_root') + file
-    if not yield_file(file): notfound("that file could not be found/served")
+    file = os.path.join(config('static_root'), file)
+    realfile = os.path.realpath(file)
+    if not realfile.startswith(config('static_root')):
+        notfound("that file could not be found/served")
+    elif yield_file(file) != 7:
+        notfound("that file could not be found/served")
 
 def yield_file(filename, type=None):
     """Append the content of a file to the response. Guesses file type if not
-    included.  Returns 1 if requested file can' be accessed (often means doesn't 
+    included.  Returns 1 if requested file can't be accessed (often means doesn't 
     exist).  Returns 2 if requested file is a directory.  Returns 7 on success. """
     if not os.access(filename, os.F_OK): return 1
     if os.path.isdir(filename): return 2
@@ -542,16 +600,7 @@ class JunoClassConstructor(type):
         super(JunoClassConstructor, cls).__init__(name, bases, dct)
 
 # Map SQLAlchemy's types to string versions of them for convenience
-column_mapping = {     'string': String,       'str': String,
-                      'integer': Integer,      'int': Integer, 
-                      'unicode': Unicode,     'text': Text,
-                  'unicodetext': UnicodeText, 'date': Date,
-                      'numeric': Numeric,     'time': Time,
-                        'float': Float,   'datetime': DateTime,
-                     'interval': Interval,  'binary': Binary,
-                      'boolean': Boolean,     'bool': Boolean,
-                   'pickletype': PickleType,
-                 }
+column_mapping = {} # Constructed in Juno.setup_database
 
 session = lambda: config('db_session')
 
@@ -597,6 +646,9 @@ def model(model_name, **kwargs):
             v = v.lower()
             if v in column_mapping: v = column_mapping[v]
             else: raise NameError("'%s' is not an allowed database column" %v)
+            #### TODO: Test this
+            # Default to length of 256
+            #if v == String: v = String(256)
             cols.append(Column(k, v))
     # Create the class    
     tmp = JunoClassConstructor(model_name, (object,), cls_dict)
@@ -651,7 +703,7 @@ def get_application(process_func):
             fs = cgi.FieldStorage(fp=environ['wsgi.input'],
                                   environ=environ,
                                   keep_blank_values=True)
-
+            
             post_dict = {}
             if fs.list:
                 for field in fs.list:
@@ -659,14 +711,14 @@ def get_application(process_func):
                         value = field
                     else:
                         value = field.value
-
+                    
                     # Each element of post_dict will be a list, even if it contains only
                     # one item. This is in line with QUERY_DICT which also works like this.
                     if not field.name in post_dict:
                         post_dict[field.name] = [value]
                     else:
                         post_dict[field.name].append(value)
-
+            
             environ['POST_DICT'] = post_dict
         else: environ['POST_DICT'] = {}
         # Done parsing inputs, now ready to send to Juno
@@ -696,7 +748,6 @@ def _load_middleware(application, middleware_list):
             application = obj(application, **args)
         except (ImportError, AttributeError):
             print 'Warning: failed to load middleware %s' % name
-
     return application
 
 def run_dev(addr, port, process_func):
@@ -715,9 +766,8 @@ def run_dev(addr, port, process_func):
 
 def run_scgi(addr, port, process_func):
     from flup.server.scgi_fork import WSGIServer as SCGI
-    #app = get_application(process_func)
-    #SCGI(application=app, bindAddress=(addr, port)).run()
-    SCGI(application=get_application(process_func), bindAddress=(addr, port)).run()
+    app = get_application(process_func)
+    SCGI(application=app, bindAddress=(addr, port)).run()
 
 def run_fcgi(addr, port, process_func):
     from flup.server.fcgi import WSGIServer as FCGI
@@ -725,7 +775,10 @@ def run_fcgi(addr, port, process_func):
     FCGI(app, bindAddress=(addr, port)).run()
 
 def run_wsgi(process_func):
-    app = get_application(process_func)
-    return app
+    sys.stdout = sys.stderr
+    return get_application(process_func)
 
-def debug_print(o): print o
+def run_appengine(process_func):
+    sys.stdout = sys.stderr
+    from google.appengine.ext.webapp.util import run_wsgi_app
+    run_wsgi_app(get_application(process_func))
