@@ -513,7 +513,7 @@ def static_serve(web, file):
     """The default static file serve function. Maps arguments to dir structure."""
     file = os.path.join(config('static_root'), file)
     realfile = os.path.realpath(file)
-    if not realfile.startswith(config('static_root')):
+    if not realfile.startswith(os.path.realpath(config('static_root'))):
         notfound("that file could not be found/served")
     elif yield_file(file) != 7:
         notfound("that file could not be found/served")
