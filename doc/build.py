@@ -1,6 +1,6 @@
 import sys,os,glob,re
 import markdown
-print sys
+
 dir = os.path.dirname(sys.argv[0]) or '.'
 os.chdir(dir)
 for f in glob.glob('*.md') + glob.glob('*.txt'):

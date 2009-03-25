@@ -15,6 +15,7 @@ If 'web' is a JunoRequest object created from an actual request:
     web.full_location   # '/?a=4'
     web.user_agent      # ...user-agent string...
     web.raw             # A dictionary mapping header names to their values
+    web.session         # A session object, if 'use_sessions': True
     web['REQUEST_URI']  # The Request can be used like a dictionary, to
                         # retrieve values from the raw dictionary.
 
@@ -35,6 +36,17 @@ If multiple values have the same name (i.e. more than one input field
 sharing a name), they values are put in a list:
             
     web.input('b')      # => ['1', '2'] for '?b=1&b=2'
+
+
+To use sessions, be sure to install [Beaker][beaker], and set 'use_sessions'
+to True.  Sessions are used like a dictionary:
+    
+    web.session['foo'] = 'bar'
+    web.session.save()  # save() must be called
+
+You then can access 'foo' later on:
+    
+    web.session['foo']  # => 'bar'
 
 
 Response Basics
@@ -111,3 +123,4 @@ Serving static files with Juno involves 3 configuration options:
 The built in static handler will automatically determine mimetypes for
 you, and will return a 404 if the file cannot be found.
 
+[beaker]: http://wiki.pylonshq.com/display/beaker/Home
