@@ -299,8 +299,6 @@ class JunoRequest(object):
         # Check for sessions
         if config('use_sessions') and config('session_lib') == 'beaker':
             self.session = request['beaker.session']
-        else:
-            self.session = None
 
     def combine_request_dicts(self):
         input_dict = self.raw['QUERY_DICT'].copy()
@@ -317,6 +315,10 @@ class JunoRequest(object):
     def __getattr__(self, attr):
         # Try returning values from self.raw
         if attr in self.keys(): return self.raw[attr]
+        if attr == 'session':
+            print >>sys.stderr, "Error: To use sessions, enable 'use_sessions'"
+            print >>sys.stderr, "       when calling juno.init()"
+            print >>sys.stderr, ""
         return None
 
     def input(self, arg=None):
