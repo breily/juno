@@ -280,13 +280,12 @@ class JunoRequest(object):
     """
     def __init__(self, request):
         # Make sure we have a request uri, and it ends in '/'
-        if 'DOCUMENT_URI' not in request: request['DOCUMENT_URI'] = '/'
-        elif request['DOCUMENT_URI'][-1] != '/': request['DOCUMENT_URI'] += '/'
+        if request['PATH_INFO'][-1] != '/': request['PATH_INFO'] += '/'
         # Set some instance variables
         self.raw = request
         self.raw['input'] = {}
-        self.location = request['DOCUMENT_URI']
-        # If we get a REQUEST_URI, store it.  Otherwise copy DOCUMENT_URI.
+        self.location = request['PATH_INFO']
+        # If we get a REQUEST_URI, store it.  Otherwise copy PATH_INFO
         if 'REQUEST_URI' in request:
             self.full_location = request['REQUEST_URI']
         else: self.full_location = self.location
@@ -719,7 +718,7 @@ def get_application(process_func):
             environ['POST_DICT'] = post_dict
         else: environ['POST_DICT'] = {}
         # Done parsing inputs, now ready to send to Juno
-        status_str, headers, body = process_func(environ['DOCUMENT_URI'],
+        status_str, headers, body = process_func(environ['PATH_INFO'],
                                                  environ['REQUEST_METHOD'],
                                                  **environ)
         start_response(status_str, headers)
