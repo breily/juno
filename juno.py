@@ -315,7 +315,7 @@ class JunoRequest(object):
     def __getattr__(self, attr):
         # Try returning values from self.raw
         if attr in self.keys(): return self.raw[attr]
-        if attr == 'session':
+        if attr == 'session' and config('log'):
             print >>sys.stderr, "Error: To use sessions, enable 'use_sessions'"
             print >>sys.stderr, "       when calling juno.init()"
             print >>sys.stderr, ""
@@ -663,8 +663,8 @@ def model(model_name, **kwargs):
     return tmp
 
 def find(model_cls):
-    if type(model_cls) == str:
-        try: model_cls = models[model_cls]
+    if isinstance(mode_cls, str):
+        try: model_cls = config('db_models')[model_cls]
         except: raise NameError("No such model exists ('%s')" %model_cls)
     return session().query(model_cls)
 

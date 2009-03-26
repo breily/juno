@@ -4,7 +4,6 @@ Important:
 
 [ ] Add authorization.
 [ ] Write an intro tutorial (in progress)
-[ ] Add sessions to documentation
 
 
 Secondary:
@@ -12,7 +11,6 @@ Secondary:
 [ ] Add other URL wildcards ('#' for numbers, '@' for letters)
 [ ] Allow unnamed URL params
 [ ] Allow URL parameters with the same name
-[ ] Make sure internal code uses updated functions (i.e. config())
 [ ] Decide if '/foo/*:bar/' should match '/foo/'
 [ ] Add functionality to dev server to automatically reload changed files (as
     in Werkzeug's run_with_reloader)
