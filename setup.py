@@ -9,7 +9,6 @@ except:
     print '** Download from: http://sqlalchemy.org/download.html'
     print '** Or run: `easy_install SQLAlchemy`'
     print ''
-    sys.exit()
 
 try:
     import flup
