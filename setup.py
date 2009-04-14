@@ -5,9 +5,10 @@ try:
     import sqlalchemy
 except:
     print ''
-    print '** SQLAlchemy is required by Juno'
+    print "** SQLAlchemy is recommended, and required for Juno\'s database access"
     print '** Download from: http://sqlalchemy.org/download.html'
     print '** Or run: `easy_install SQLAlchemy`'
+    print '** If you\'re not going to be using a database, ignore this.'
     print ''
 
 try:
@@ -16,7 +17,7 @@ except:
     print ''
     print '** To use SCGI and FastCGI, Juno requires flup'
     print '** Download from: http://trac.saddi.com/flup/'
-    print "** If you\'re not going to use SCGI or FastCGI, ignore this message"
+    print "** If you\'re not going to use SCGI or FastCGI, ignore this message."
     print ''
 
 try:
