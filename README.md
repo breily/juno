@@ -61,8 +61,8 @@ Install
         $ python
         >>> import juno             # Make sure everything worked
 
-* Requires: [SQLAlchemy][sqlalchemy]
-* Optional: 
+* Optional Dependencies: 
+    * [SQLAlchemy][sqlalchemy] (for database access)
     * [Jinja2][jinja2]/[Mako][mako] (for templating)
     * [Flup][flup]        (for SCGI/FastCGI only)
     * [Beaker][beaker]      (for sessions)
