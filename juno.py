@@ -663,7 +663,7 @@ def model(model_name, **kwargs):
     return tmp
 
 def find(model_cls):
-    if isinstance(mode_cls, str):
+    if isinstance(model_cls, str):
         try: model_cls = config('db_models')[model_cls]
         except: raise NameError("No such model exists ('%s')" %model_cls)
     return session().query(model_cls)
