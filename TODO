@@ -1,5 +1,13 @@
 % TODOs may also be placed in source files.
 
+Quick:
+ 
+[ ] Make sure template tutorial mentions ./templates/ dir
+[ ] Doc inconsistency (?)
+[ ] Decorators/functions are None
+[ ] Add solaris tutorial link in setup docs
+
+
 Important:
 
 [ ] Add authorization.
