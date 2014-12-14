@@ -4,8 +4,10 @@ Juno
 
 * Juno is a web framework that was designed to make development as fast
   as possible.
-* Homepage: [http://brianreily.com/project/juno][homepage]
 * Repository: [http://github.com/breily/juno][repo]
+* I have not updated Juno in about 6 years and don't plan to return to it.
+  Have fun with it.  It's not a great web framework but there's some
+  interesting Python code in it.
 
 
 Using Juno
